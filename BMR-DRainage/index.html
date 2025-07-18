@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMR Drainage: AI Audit Report by TradieAI</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN for interactive charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light grey background for the whole page */
+            color: #333;
+        }
+        /* Custom class for the highlight in the report title */
+        .report-title-highlight {
+            color: #15f45e; /* TradieAI green */
+        }
+        /* Custom class for visually distinct callout boxes */
+        .visual-callout {
+            background-color: #e0f2f7; /* Light blue */
+            border-left: 4px solid #0284c7; /* Sky 600 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        /* Styling for active and inactive tabs */
+        .tab-active {
+            border-color: #0284c7; /* Sky 600 */
+            color: #0284c7; /* Sky 600 */
+            font-weight: 600;
+        }
+        .tab-inactive {
+            border-color: transparent;
+            color: #6b7280; /* Gray 500 */
+        }
+        .tab-inactive:hover {
+            color: #374151; /* Gray 700 */
+            border-color: #d1d5db; /* Gray 300 */
+        }
+        /* Ensure chart containers have a defined height for Chart.js responsiveness */
+        .chart-container {
+            position: relative;
+            height: 256px; /* h-64 */
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .chart-container {
+                height: 320px; /* md:h-80 */
+            }
+        }
+        /* Image placeholder style */
+        .image-placeholder-style {
+            min-height: 200px; /* Minimum height for images */
+            background-color: #EFEFEF; /* Light grey background */
+            color: #555555; /* Dark grey text */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            text-align: center;
+        }
+        .image-load-error {
+            border: 2px dashed #ff0000; /* Red dashed border for error images */
+        }
+        /* Sticky tab navigation adjustment for header height */
+        .sticky-tabs {
+            top: 76px; /* Default for mobile/small screens */
+        }
+        @media (min-width: 640px) { /* sm breakpoint */
+            .sticky-tabs {
+                top: 84px; /* Adjusted for larger header on sm screens */
+            }
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .sticky-tabs {
+                top: 96px; /* Adjusted for larger header on md screens */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Header Section -->
+    <header class="bg-black text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="py-4 sm:py-5 flex flex-col sm:flex-row justify-between items-center">
+                <!-- Logo -->
+                <div class="header-logo mb-3 sm:mb-0">
+                    <img src="https://static.wixstatic.com/media/7b20bf_0a7504dd7ef040058cb529946845da76~mv2.png" alt="TradieAI Logo" class="h-12 sm:h-14 md:h-16">
+                </div>
+                <!-- Title -->
+                <h1 class="header-title text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-center flex-grow px-2 sm:px-4 mb-3 sm:mb-0">
+                    BMR Drainage: AI Audit Report <span id="headerYear" class="report-title-highlight"></span>
+                </h1>
+                <!-- Button -->
+                <div class="header-button-container">
+                    <a href="https://calendar.app.google/PtJaxyBVhkLyBE8Y8" target="_blank" rel="noopener noreferrer"
+                       class="bg-amber-500 hover:bg-amber-600 text-black font-semibold py-2 px-4 sm:px-6 rounded-lg text-sm sm:text-base transition duration-300 ease-in-out whitespace-nowrap">
+                        Book A Call
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tab Navigation Bar -->
+    <nav class="sticky sticky-tabs z-40 mb-2 bg-white shadow-md">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <ul role="tablist" class="flex flex-col sm:flex-row justify-around border-b border-gray-200">
+                <li role="presentation" class="flex-1">
+                    <button id="tab-overview" role="tab" aria-controls="overview-content" aria-selected="true"
+                            class="w-full py-3 px-2 sm:py-4 sm:px-4 text-center font-medium text-xs sm:text-sm md:text-base focus:outline-none tab-active">
+                        Overview
+                    </button>
+                </li>
+                <li role="presentation" class="flex-1">
+                    <button id="tab-snapshot" role="tab" aria-controls="snapshot-content" aria-selected="false"
+                            class="w-full py-3 px-2 sm:py-4 sm:px-4 text-center font-medium text-xs sm:text-sm md:text-base focus:outline-none tab-inactive">
+                        Snapshot
+                    </button>
+                </li>
+                <li role="presentation" class="flex-1">
+                    <button id="tab-roadmap" role="tab" aria-controls="roadmap-content" aria-selected="false"
+                            class="w-full py-3 px-2 sm:py-4 sm:px-4 text-center font-medium text-xs sm:text-sm md:text-base focus:outline-none tab-inactive">
+                        AI Road Map
+                    </button>
+                </li>
+                <li role="presentation" class="flex-1">
+                    <button id="tab-roi" role="tab" aria-controls="roi-content" aria-selected="false"
+                            class="w-full py-3 px-2 sm:py-4 sm:px-4 text-center font-medium text-xs sm:text-sm md:text-base focus:outline-none tab-inactive">
+                        Return On Investment
+                    </button>
+                </li>
+                <li role="presentation" class="flex-1">
+                    <button id="tab-implementation" role="tab" aria-controls="implementation-content" aria-selected="false"
+                            class="w-full py-3 px-2 sm:py-4 sm:px-4 text-center font-medium text-xs sm:text-sm md:text-base focus:outline-none tab-inactive">
+                        Implementation
+                    </button>
+                </li>
+                <li role="presentation" class="flex-1">
+                    <button id="tab-nextsteps" role="tab" aria-controls="nextsteps-content" aria-selected="false"
+                            class="w-full py-3 px-2 sm:py-4 sm:px-4 text-center font-medium text-xs sm:text-sm md:text-base focus:outline-none tab-inactive">
+                        Next Steps
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content Sections -->
+    <main>
+        <!-- Overview Tab Content -->
+        <section id="overview-content" role="tabpanel" aria-labelledby="tab-overview" class="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="bg-white p-6 sm:p-8 rounded-xl shadow-xl">
+                <h2 class="text-3xl sm:text-4xl font-bold text-sky-700 mb-6">Gidday Nick and the team at BMR Drainage!</h2>
+                <img src="https://static.wixstatic.com/media/7b20bf_8a3c4e23aaf340e4939779f02a77df64~mv2.png" alt="Overview Image"
+                     class="w-full h-auto object-cover rounded-lg shadow-md mb-6 md:mb-8 image-placeholder-style"
+                     onerror="this.alt='Image failed to load. Please check URL.'; this.src='https://placehold.co/1200x675/EFEFEF/555555?text=Image+Load+Error'; this.classList.add('image-load-error');">
+
+                <p class="text-lg text-slate-700 mb-4">
+                    Righto, let's dive into how AI can give your drainage and maintenance business a real boost. This report is your go-to guide, breaking down how smart tech can tackle those daily headaches, free up your time, and get more of the right jobs rolling in.
+                </p>
+                <p class="text-slate-600 mb-4">
+                    We've had a good yarn about what's working and what's not, and this audit is all about showing you the art of the possible. Think of it as a roadmap to a smoother, more profitable BMR Drainage, without you having to be glued to the phone or buried in paperwork. We'll look at where you're at, where you want to be, and how AI can be the trusty tool that gets you there.
+                </p>
+                <p class="text-slate-600">
+                    No fancy jargon, just straightforward talk about making your life easier and your business stronger. Let's get stuck in!
+                </p>
+            </div>
+        </section>
+
+        <!-- Snapshot Tab Content -->
+        <section id="snapshot-content" role="tabpanel" aria-labelledby="tab-snapshot" class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 hidden">
+            <div class="bg-white p-6 sm:p-8 rounded-xl shadow-xl">
+                <h2 class="text-3xl sm:text-4xl font-bold text-sky-700 mb-6">Snapshot: BMR Drainage Today</h2>
+
+                <p class="text-slate-700 mb-6">
+                    Based on our chat, here's a quick look at where BMR Drainage stands right now. You're a hands-on team of 2-3, excellent at the actual drainage work, but the admin and lead generation are eating into your valuable time.
+                </p>
+
+                <h3 class="text-xl font-semibold text-slate-800 mt-6 mb-3">The Good Bits (Your Strengths)</h3>
+                <ul class="list-disc list-inside text-slate-600 mb-4 space-y-2">
+                    <li>**Hands-On Expertise:** You're clearly skilled at drainage and maintenance work, delivering quality service.</li>
+                    <li>**Small, Agile Team:** Being a compact team means you can adapt quickly and maintain personal customer relationships.</li>
+                    <li>**Open to New Tech:** You're "very flexible" and "keen" to adopt new technology, which is a massive advantage for AI integration. No old systems holding you back!</li>
+                    <li>**Clear Objectives:** You know exactly what you want to achieve: growth, better cash flow, less admin, and improved customer service. This clarity helps us target solutions.</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold text-slate-800 mt-6 mb-3">The Niggles & Opportunities</h3>
+                <p class="text-slate-700 mb-4">
+                    This is where AI can really make a difference. These are the areas slowing you down or costing you potential jobs:
+                </p>
+                <div class="visual-callout">
+                    <h4 class="font-bold text-lg text-sky-800">Lead Generation & Follow-up: The Biggest Headache</h4>
+                    <p class="text-slate-700">
+                        Your #1 pain point is "not enough leads / finding the right jobs." You're missing out because of slow responses to inquiries, difficulty qualifying leads, and a significant struggle with manually following up on quotes. This isn't just lost time; it's lost revenue. You estimate losing 10-15% of potential leads due to slow responses and could convert 20% more quotes with better follow-up.
+                    </p>
+                </div>
+                <div class="visual-callout">
+                    <h4 class="font-bold text-lg text-sky-800">Admin Overload: Drowning in Paperwork & Calls</h4>
+                    <p class="text-slate-700">
+                        You're spending hours on repetitive tasks: replying to emails, managing scattered documents, data entry, and chasing payments. Phone inquiries alone consume 1-2 hours daily. The constant "communication overhead" eats up 2-3 hours a day for the team. This manual admin is a huge drain on productivity and stress.
+                    </p>
+                </div>
+                <div class="visual-callout">
+                    <h4 class="font-bold text-lg text-sky-800">Cash Flow & Invoicing Woes</h4>
+                    <p class="text-slate-700">
+                        While Xero handles basic accounting, invoicing is a "drag," and chasing payments is a "huge headache," consuming 2-3 hours weekly. This directly impacts your cash flow and adds unnecessary stress.
+                    </p>
+                </div>
+
+                <h3 class="text-xl font-semibold text-slate-800 mt-6 mb-3">Website Woes & Opportunities</h3>
+                <p class="text-slate-700 mb-4">
+                    You don't currently have a dedicated website, which is a massive missed opportunity for lead generation and building credibility.
+                </p>
+                <ul class="list-disc list-inside text-slate-600 mb-4 space-y-2">
+                    <li>**Missing Online Presence:** Without a website, you're invisible to many potential customers actively searching for drainage services online.</li>
+                    <li>**Credibility Gap:** A professional website builds trust and showcases your expertise, which you're currently lacking.</li>
+                    <li>**AI Opportunity:** A new website, built with AI in mind from the ground up, can feature AI-powered chatbots for instant inquiry responses, AI-driven SEO for better visibility, and integrated analytics to understand customer behaviour.</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold text-slate-800 mt-6 mb-3">Key Operational Bottlenecks</h3>
+                <ul class="list-disc list-inside text-slate-600 mb-4 space-y-2">
+                    <li>**Manual Scheduling:** Relying on pen and paper/physical diary leads to inefficiencies, double bookings, and wasted travel time (2-3 hours/week just on juggling the schedule).</li>
+                    <li>**Dispersed Data:** Customer and job info is scattered across mental notes, notebooks, emails, and texts, making it "a hot mess" and impossible to get a quick overview or history (30-60 minutes daily just piecing info together).</li>
+                    <li>**Stock Management:** Manual tracking of materials means running out of critical parts mid-job or overstocking.</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold text-slate-800 mt-6 mb-3">Systems & Data</h3>
+                <ul class="list-disc list-inside text-slate-600 mb-4 space-y-2">
+                    <li>**Limited Software:** Xero is your only formal system; no CRM or dedicated job management software.</li>
+                    <li>**Data Deficiency:** You "barely collect data or don't know where to start." This means you're flying blind, unable to see overall business performance or make data-driven decisions. You "don't have a dashboard" and it's "a total mess."</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold text-slate-800 mt-6 mb-3">Tech Adoption & AI Sentiments</h3>
+                <p class="text-slate-700 mb-4">
+                    You're keen and flexible when it comes to new technology, which is fantastic! Your main worry is implementation complexity, but the desire to solve your core headaches with AI is strong. This makes BMR Drainage an ideal candidate for smart AI integration.
+                </p>
+            </div>
+        </section>
+
+        <!-- AI Road Map Tab Content -->
+        <section id="roadmap-content" role="tabpanel" aria-labelledby="tab-roadmap" class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 hidden">
+            <div class="bg-white p-6 sm:p-8 rounded-xl shadow-xl">
+                <h2 class="text-3xl sm:text-4xl font-bold text-sky-700 mb-6">AI Road Map: Building a Smarter BMR Drainage with the ADOPT Framework</h2>
+                <p class="text-lg text-slate-700 mb-4">
+                    At TradieAI, we don't just throw tech at problems. We use our tried-and-true **ADOPT Framework** to ensure AI solutions fit your business like a glove, delivering real results. Here's how we'll get BMR Drainage humming:
+                </p>
+                <img src="https://static.wixstatic.com/media/7b20bf_89c105db36594d9384abe608024ca288~mv2.png" alt="AI Road Map Image"
+                     class="w-full h-auto object-cover rounded-lg shadow-md mb-6 md:mb-8 image-placeholder-style"
+                     onerror="this.alt='Image failed to load. Please check URL.'; this.src='https://placehold.co/1200x675/EFEFEF/555555?text=Image+Load+Error'; this.classList.add('image-load-error');">
+
+                <!-- A - Assess -->
+                <div class="bg-sky-50 p-4 rounded-lg shadow mb-4">
+                    <h3 class="text-xl font-semibold text-sky-600 mb-2">A - Assess Current State & Goals</h3>
+                    <p class="text-slate-700 mb-2">
+                        **Problem:** Currently, your operations are manual, data is scattered, and lead generation is inconsistent, leading to lost opportunities and administrative burden.
+                    </p>
+                    <p class="text-slate-700 mb-2">
+                        **TradieAI Solution:** We've already started this with your audit questionnaire! We'll conduct a deeper dive into your specific workflows, identifying every single manual task, communication bottleneck, and data silo. We'll map out your current customer journey and sales pipeline to pinpoint exact points where AI can step in.
+                    </p>
+                    <p class="text-slate-700">
+                        **Potential ROI:** Clearly define baseline metrics for time spent, lead conversion, and customer response times. (See 'Return On Investment' tab for detailed examples).
+                    </p>
+                </div>
+
+                <!-- D - Define -->
+                <div class="bg-sky-50 p-4 rounded-lg shadow mb-4">
+                    <h3 class="text-xl font-semibold text-sky-600 mb-2">D - Define Tools & Design Solutions</h3>
+                    <p class="text-slate-700 mb-2">
+                        **Problem:** You lack a centralized system for customer management, scheduling, and data, and your website presence is non-existent.
+                    </p>
+                    <p class="text-slate-700 mb-2">
+                        **TradieAI Solution:** This is where we pick the right tools for the job. We'll design bespoke AI solutions tailored for BMR Drainage, focusing on:
+                        <ul class="list-disc list-inside ml-4 mt-2 mb-2">
+                            <li>**AI-Powered Website & Lead Magnet:** Build a professional website with an integrated AI chatbot for instant 24/7 inquiry handling and lead qualification.</li>
+                            <li>**Smart CRM Integration:** Implement a CRM that centralizes all customer and lead data, linked with Xero for a single source of truth.</li>
+                            <li>**Automated Scheduling & Dispatch:** Introduce an AI-driven scheduling system that optimizes routes, manages appointments, and allows technicians to update job status in real-time.</li>
+                            <li>**AI-Assisted Admin:** Deploy AI tools for automated quote generation, invoice follow-ups, and intelligent email management.</li>
+                            <li>**AI Toolkit & Integration:** We'll look at how various AI agents can work together – for example, an AI for marketing (generating content for your new website), an AI for customer service (the chatbot), and an AI for operations (scheduling and data entry). These tools won't just sit in silos; we'll connect them, potentially using platforms that can visualize integrated data (like Google Looker Studio for a "dashboard" view of your entire business performance).</li>
+                        </ul>
+                    </p>
+                    <p class="text-slate-700">
+                        **Potential ROI:** Outline specific efficiency gains and lead conversion improvements from these integrated tools. (See 'Return On Investment' tab for detailed examples).
+                    </p>
+                </div>
+
+                <!-- O - Outline -->
+                <div class="bg-sky-50 p-4 rounded-lg shadow mb-4">
+                    <h3 class="text-xl font-semibold text-sky-600 mb-2">O - Outline Implementation Plan</h3>
+                    <p class="text-slate-700 mb-2">
+                        **Problem:** You have no dedicated IT support and worry about the complexity of new technology.
+                    </p>
+                    <p class="text-slate-700 mb-2">
+                        **TradieAI Solution:** We'll create a step-by-step, phased implementation plan that's easy to understand and manage. This includes setting clear milestones, defining roles, and outlining training requirements. We'll start with high-impact, easy-win solutions first to show immediate value.
+                    </p>
+                    <p class="text-slate-700">
+                        **Potential ROI:** Minimise disruption and accelerate time-to-value, ensuring a smooth transition.
+                    </p>
+                </div>
+
+                <!-- P - Prototype -->
+                <div class="bg-sky-50 p-4 rounded-lg shadow mb-4">
+                    <h3 class="text-xl font-semibold text-sky-600 mb-2">P - Prototype & Pilot</h3>
+                    <p class="text-slate-700 mb-2">
+                        **Problem:** Investing in new tech without knowing if it will truly work for your specific business.
+                    </p>
+                    <p class="text-slate-700 mb-2">
+                        **TradieAI Solution:** We'll build small, working prototypes of the key AI solutions and run pilot programs with your team. For example, a pilot of the AI chatbot on a temporary page, or a small test of the automated scheduling. This allows us to get feedback, iron out kinks, and ensure the solution truly meets BMR Drainage's needs before full rollout.
+                    </p>
+                    <p class="text-slate-700">
+                        **Potential ROI:** De-risk the investment, ensure user adoption, and refine solutions for maximum impact.
+                    </p>
+                </div>
+
+                <!-- T - Test & Train -->
+                <div class="bg-sky-50 p-4 rounded-lg shadow mb-4">
+                    <h3 class="text-xl font-semibold text-sky-600 mb-2">T - Test, Train & Transform</h3>
+                    <p class="text-slate-700 mb-2">
+                        **Problem:** Ensuring your small team can effectively use new AI tools and integrate them into their daily routines.
+                    </p>
+                    <p class="text-slate-700 mb-2">
+                        **TradieAI Solution:** Once the pilots are successful, we'll roll out the full solutions, providing comprehensive, hands-on training for you and your team. We'll monitor performance, gather feedback, and continuously optimize the AI systems to ensure they're delivering maximum value. This isn't a one-and-done; it's about continuous improvement.
+                    </p>
+                    <p class="text-slate-700">
+                        **Potential ROI:** Maximise efficiency gains, boost team productivity, and ensure long-term success and scalability.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Return On Investment Tab Content -->
+        <section id="roi-content" role="tabpanel" aria-labelledby="tab-roi" class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 hidden">
+            <div class="bg-white p-6 sm:p-8 rounded-xl shadow-xl">
+                <h2 class="text-3xl sm:text-4xl font-bold text-sky-700 mb-6">The Bottom Line: Return On Investment with AI</h2>
+                <p class="text-lg text-slate-700 mb-4">
+                    Let's talk brass tacks. AI isn't just about fancy tech; it's about putting more dollars in your pocket and giving you back precious time. Here are some real-world examples of the tangible and intangible returns BMR Drainage can expect.
+                </p>
+                <img src="https://static.wixstatic.com/media/7b20bf_591af0de93254d42b07efbd93dce180e~mv2.png" alt="Return On Investment Image"
+                     class="w-full h-auto object-cover rounded-lg shadow-md mb-6 md:mb-8 image-placeholder-style"
+                     onerror="this.alt='Image failed to load. Please check URL.'; this.src='https://placehold.co/1200x675/EFEFEF/555555?text=Image+Load+Error'; this.classList.add('image-load-error');">
+
+                <h3 class="text-2xl font-bold text-slate-800 mt-8 mb-4">Detailed Static ROI Examples</h3>
+
+                <!-- Example 1: Turbo-Charging Your Quoting Process -->
+                <div class="roi-example-box bg-slate-50 p-6 rounded-xl shadow-lg mb-6">
+                    <h4 class="text-xl font-semibold text-sky-700 mb-3">1. Turbo-Charging Your Quoting Process</h4>
+                    <p class="text-slate-600 mb-4">
+                        **Problem:** Manually preparing and following up on quotes is slow and leads to lost jobs. You estimate losing thousands monthly in missed opportunities.
+                    </p>
+                    <p class="text-slate-600 mb-4">
+                        **AI Solution:** An AI-assisted quoting system can auto-populate details, generate professional proposals faster, and trigger automated, personalized follow-up sequences.
+                    </p>
+                    <p class="text-slate-600 mb-2">
+                        **Potential Impact:**
+                        <ul class="list-disc list-inside ml-4">
+                            <li>**Time Saved:** Reduce quote preparation time by <strong>50%</strong> (e.g., from 30 mins to 15 mins per quote).</li>
+                            <li>**Conversion Rate:** Increase quote-to-job conversion by <strong>20-30%</strong> due to faster, more consistent follow-ups.</li>
+                            <li>**Revenue Boost:** If you currently quote 10 jobs/week at an average of $800/job, a 20% conversion increase means 2 extra jobs, or <strong>$1,600 additional revenue per week</strong>.</li>
+                        </ul>
+                    </p>
+                </div>
+
+                <!-- Example 2: Taming the Email & Admin Beast -->
+                <div class="roi-example-box bg-slate-50 p-6 rounded-xl shadow-lg mb-6">
+                    <h4 class="text-xl font-semibold text-sky-700 mb-3">2. Taming the Email & Admin Beast</h4>
+                    <p class="text-slate-600 mb-4">
+                        **Problem:** Managing emails, messages, and general data entry consumes 2-3 hours of team time daily, disrupting focus.
+                    </p>
+                    <p class="text-slate-600 mb-4">
+                        **AI Solution:** AI can triage incoming emails, draft responses to common inquiries, automate data extraction for job details, and file documents digitally.
+                    </p>
+                    <p class="text-slate-600 mb-2">
+                        **Potential Impact:**
+                        <ul class="list-disc list-inside ml-4">
+                            <li>**Admin Time Reduction:** Automate up to <strong>40-60%</strong> of repetitive admin tasks.</li>
+                            <li>**Hours Reclaimed:** For a 3-person team, this could mean reclaiming <strong>6-9 hours per day</strong> (or 30-45 hours per week) previously spent on non-billable admin.</li>
+                            <li>**Productivity Boost:** More time for billable work, less stress, and faster customer responses.</li>
+                        </ul>
+                    </p>
+                </div>
+
+                <!-- Example 3: Reducing Costly Rework & Errors -->
+                <div class="roi-example-box bg-slate-50 p-6 rounded-xl shadow-lg mb-6">
+                    <h4 class="text-xl font-semibold text-sky-700 mb-3">3. Reducing Costly Rework & Errors</h4>
+                    <p class="text-slate-600 mb-4">
+                        **Problem:** Manual data entry and scattered information lead to errors in invoicing, scheduling conflicts, and forgotten details.
+                    </p>
+                    <p class="text-slate-600 mb-4">
+                        **AI Solution:** Centralized CRM and job management systems powered by AI minimize manual data entry, cross-reference information, and flag inconsistencies.
+                    </p>
+                    <p class="text-slate-600 mb-2">
+                        **Potential Impact:**
+                        <ul class="list-disc list-inside ml-4">
+                            <li>**Error Reduction:** Decrease administrative errors by <strong>up to 80%</strong>.</li>
+                            <li>**Cost Savings:** Avoid costly rework, customer disputes, and time spent correcting mistakes. Even one rescheduled job due to an overlap costs time, fuel, and reputation.</li>
+                            <li>**Professionalism:** Enhance your professional image with accurate, timely communication and service delivery.</li>
+                        </ul>
+                    </p>
+                </div>
+
+                <!-- Example 4: Optimizing Crew Scheduling & Minimizing Downtime -->
+                <div class="roi-example-box bg-slate-50 p-6 rounded-xl shadow-lg mb-6">
+                    <h4 class="text-xl font-semibold text-sky-700 mb-3">4. Optimizing Crew Scheduling & Minimizing Downtime</h4>
+                    <p class="text-slate-600 mb-4">
+                        **Problem:** Manual scheduling leads to inefficient routes, wasted travel time, and potential double bookings, costing 2-3 hours per week just on juggling the schedule.
+                    </p>
+                    <p class="text-slate-600 mb-4">
+                        **AI Solution:** An AI-powered scheduling system can dynamically optimize routes, assign jobs based on location and availability, and allow real-time updates from the field.
+                    </p>
+                    <p class="text-slate-600 mb-2">
+                        **Potential Impact:**
+                        <ul class="list-disc list-inside ml-4">
+                            <li>**Travel Time Reduction:** Cut travel time and fuel costs by <strong>15-25%</strong> through optimized routing.</li>
+                            <li>**Increased Jobs:** Fit in <strong>1-2 extra jobs per week</strong> per technician due to reduced travel and downtime.</li>
+                            <li>**Improved Customer Service:** More accurate arrival times and fewer reschedules, boosting customer satisfaction.</li>
+                        </ul>
+                    </p>
+                </div>
+
+                <h3 class="text-2xl font-bold text-slate-800 mt-8 mb-4">Interactive ROI Calculator: See Your Savings!</h3>
+                <p class="text-slate-700 mb-6">
+                    Let's play around with some numbers to see the real potential for BMR Drainage. Adjust the sliders below to see how AI can impact your bottom line. These are illustrative examples based on typical industry benchmarks and your current operations.
+                </p>
+
+                <div class="my-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- ROI Example 1: Admin Time Savings for Field Staff -->
+                    <div class="roi-example-box bg-slate-50 p-6 rounded-xl shadow-lg">
+                        <h3 class="text-2xl font-bold text-sky-700 mb-4">Taming the Admin Beast</h3>
+                        <p class="text-slate-600 mb-4">Calculate savings from reducing weekly admin time for your team.</p>
+
+                        <div class="mb-4">
+                            <label for="admin-reduction-slider" class="block text-sm font-medium text-slate-700">Weekly Admin Time Reduction: <span id="admin-reduction-value" class="font-bold text-sky-600">30%</span></label>
+                            <input id="admin-reduction-slider" type="range" min="10" max="70" value="30" step="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-sky-600">
+                        </div>
+
+                        <div class="mb-6">
+                            <label for="admin-base-hours-slider" class="block text-sm font-medium text-slate-700">Current Weekly Admin Hours per person: <span id="admin-base-hours-value" class="font-bold text-sky-600">5</span> hrs</label>
+                            <input id="admin-base-hours-slider" type="range" min="2" max="10" value="5" step="0.5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-sky-600">
+                        </div>
+
+                        <div class="text-sm text-slate-500 mb-4">
+                            <p>Based on: <span id="numberOfFieldStaffDisplay">3</span> Field Staff, Avg. Loaded Hourly Rate: $<span id="hourlyRateDisplay">65</span></p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div class="bg-white p-4 rounded-lg text-center shadow">
+                                <p class="text-slate-600 text-sm">Total Weekly Hours Reclaimed:</p>
+                                <p id="admin-hours-saved" class="text-3xl font-bold text-green-600">0</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg text-center shadow">
+                                <p class="text-slate-600 text-sm">Potential Weekly Monetary Savings:</p>
+                                <p id="admin-monetary-savings" class="text-3xl font-bold text-green-700">$0.00</p>
+                            </div>
+                        </div>
+
+                        <div class="chart-container mt-4">
+                            <canvas id="admin-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- ROI Example 2: Quoting Process Efficiency -->
+                    <div class="roi-example-box bg-slate-50 p-6 rounded-xl shadow-lg">
+                        <h3 class="text-2xl font-bold text-sky-700 mb-4">Turbo-Charging Your Quoting Process</h3>
+                        <p class="text-slate-600 mb-4">Calculate the impact of faster quoting and better follow-up.</p>
+
+                        <div class="mb-4">
+                            <label for="quotes-per-week-slider" class="block text-sm font-medium text-slate-700">Current Quotes per Week: <span id="quotes-per-week-value" class="font-bold text-sky-600">10</span></label>
+                            <input id="quotes-per-week-slider" type="range" min="5" max="20" value="10" step="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-sky-600">
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="time-per-quote-slider" class="block text-sm font-medium text-slate-700">Current Time per Quote (hours): <span id="time-per-quote-value" class="font-bold text-sky-600">0.5</span> hrs</label>
+                            <input id="time-per-quote-slider" type="range" min="0.25" max="1.5" value="0.5" step="0.25" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-sky-600">
+                        </div>
+
+                        <div class="mb-6">
+                            <label for="ai-time-reduction-slider" class="block text-sm font-medium text-slate-700">AI Time Reduction per Quote: <span id="ai-time-reduction-value" class="font-bold text-sky-600">50%</span></label>
+                            <input id="ai-time-reduction-slider" type="range" min="10" max="80" value="50" step="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-sky-600">
+                        </div>
+
+                        <div class="text-sm text-slate-500 mb-4">
+                            <p>Based on: Avg. Revenue per Converted Quote: $<span id="avgRevenuePerQuoteDisplay">800</span></p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div class="bg-white p-4 rounded-lg text-center shadow">
+                                <p class="text-slate-600 text-sm">Hours Saved on Quoting Weekly:</p>
+                                <p id="quoting-hours-saved" class="text-3xl font-bold text-green-600">0</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg text-center shadow">
+                                <p class="text-slate-600 text-sm">Potential Additional Weekly Revenue:</p>
+                                <p id="quoting-additional-revenue" class="text-3xl font-bold text-green-700">$0.00</p>
+                            </div>
+                        </div>
+
+                        <div class="chart-container mt-4">
+                            <canvas id="quoting-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-6 bg-sky-100 rounded-lg shadow">
+                    <h3 class="text-2xl font-bold text-sky-700 mb-4">Summing Up the Potential ROI</h3>
+                    <p class="text-slate-700 mb-4">
+                        As you can see, even conservative estimates show significant time and monetary savings. Beyond the numbers, AI brings:
+                    </p>
+                    <ul class="list-disc list-inside text-slate-600 mb-4 space-y-2">
+                        <li>**Improved Morale:** Less time on tedious admin means happier, more productive staff.</li>
+                        <li>**Better Customer Satisfaction:** Faster responses, accurate quotes, and reliable scheduling lead to delighted customers and more referrals.</li>
+                        <li>**Scalability:** AI allows BMR Drainage to grow without exponentially increasing administrative overhead.</li>
+                        <li>**Data-Driven Decisions:** Finally get a clear dashboard view of your business performance, enabling smarter strategic choices.</li>
+                    </ul>
+                    <p class="text-slate-700">
+                        This isn't just about cutting costs; it's about building a more resilient, efficient, and profitable business for the long haul.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Implementation Tab Content -->
+        <section id="implementation-content" role="tabpanel" aria-labelledby="tab-implementation" class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 hidden">
+            <div class="bg-white p-6 sm:p-8 rounded-xl shadow-xl">
+                <h2 class="text-3xl sm:text-4xl font-bold text-sky-700 mb-6">Implementation: Making AI Work for BMR Drainage</h2>
+
+                <h3 class="text-xl font-semibold text-slate-800 mt-6 mb-3">Making AI Work: Governance, Training & Strategy</h3>
+                <p class="text-slate-700 mb-4">
+                    Bringing AI into your business isn't just about flipping a switch. It's about smart planning, clear rules, and making sure your team is on board and confident. That's where TradieAI steps in, guiding you through every step.
+                </p>
+
+                <details class="mb-4">
+                    <summary class="font-semibold cursor-pointer hover:text-sky-600 text-lg py-2 px-3 bg-gray-50 rounded-md shadow-sm">AI Governance Framework Outline</summary>
+                    <div class="p-4 bg-slate-50 rounded-md mt-2 text-slate-700">
+                        <p class="mb-2">**Purpose:** Ensuring responsible, ethical, and effective AI use across BMR Drainage.</p>
+                        <p class="mb-2">**Key Areas:** We'll help you define guidelines around data privacy (especially customer information), security protocols for AI tools, how to detect and mitigate potential biases in AI outputs, clear accountability for AI-driven decisions, and ensuring compliance with relevant New Zealand regulations.</p>
+                        <p>**TradieAI Support:** We'll work with you to establish a simple, practical governance framework that fits a small business, ensuring your AI journey is safe and sound.</p>
+                    </div>
+                </details>
+
+                <details class="mb-4">
+                    <summary class="font-semibold cursor-pointer hover:text-sky-600 text-lg py-2 px-3 bg-gray-50 rounded-md shadow-sm">Staff Training Manual Outline</summary>
+                    <div class="p-4 bg-slate-50 rounded-md mt-2 text-slate-700">
+                        <p class="mb-2">**Purpose:** Upskilling your team to confidently use new AI tools and integrate them into their daily work.</p>
+                        <p class="mb-2">**Key Elements:** We'll develop easy-to-understand, tool-specific training modules (e.g., how to use the AI chatbot for inquiries, how to update the AI scheduler). We'll cover AI best practices, like understanding what AI can and can't do, and clear protocols for handling sensitive data when interacting with AI systems.</p>
+                        <p>**TradieAI Support:** We'll provide custom workshops and create simple, accessible resource materials tailored for the BMR Drainage team.</p>
+                    </div>
+                </details>
+
+                <details class="mb-4">
+                    <summary class="font-semibold cursor-pointer hover:text-sky-600 text-lg py-2 px-3 bg-gray-50 rounded-md shadow-sm">Structured AI Strategy Outline</summary>
+                    <div class="p-4 bg-slate-50 rounded-md mt-2 text-slate-700">
+                        <p class="mb-2">**Purpose:** Developing a clear, long-term vision for AI integration that aligns with BMR Drainage's growth objectives.</p>
+                        <p class="mb-2">**Key Components:** This includes planning a phased rollout of AI solutions, starting with the highest impact areas first. We'll help you define Key Performance Indicators (KPIs) to track the success of AI (e.g., lead conversion rate, admin time saved, customer response time). It's about setting up a continuous improvement loop, where we regularly review and refine the AI's performance.</p>
+                        <p>**TradieAI Support:** We'll facilitate strategic planning sessions to ensure AI is not just a quick fix, but a core part of your future business strategy.</p>
+                    </div>
+                </details>
+
+                <details class="mb-4">
+                    <summary class="font-semibold cursor-pointer hover:text-sky-600 text-lg py-2 px-3 bg-gray-50 rounded-md shadow-sm">Hands-on AI Workshop Outline for Staff</summary>
+                    <div class="p-4 bg-slate-50 rounded-md mt-2 text-slate-700">
+                        <p class="mb-2">**Purpose:** Practical engagement and skill-building to make your team comfortable and proficient with AI tools.</p>
+                        <p class="mb-2">**Structure:** We'll run interactive sessions where your team can actually use the new AI tools. This will involve real-world scenario solving – for example, practicing how to use the AI scheduler to manage a tricky booking, or using the AI chatbot to answer common customer questions.</p>
+                        <p>**TradieAI Support:** We'll facilitate these workshops, providing all necessary materials and ensuring a supportive, hands-on learning environment.</p>
+                    </div>
+                </details>
+
+                <h3 class="text-xl font-semibold text-slate-800 mt-6 mb-3">Practical Implementation Steps (Example: AI-Assisted Quoting & Follow-up)</h3>
+                <p class="text-slate-700 mb-4">
+                    Let's look at how we'd implement one of your biggest pain points: streamlining the quoting process.
+                </p>
+                <ol class="list-decimal list-inside text-slate-600 space-y-3">
+                    <li>
+                        **Discovery & Goal Setting:** We'll sit down with you to map out your current quoting process in detail. We'll define clear goals: e.g., "Reduce quote generation time by 50%" and "Increase quote conversion by 25%."
+                    </li>
+                    <li>
+                        **Tool Selection & Customization:** Based on your needs, we'll select or develop an AI-powered quoting tool. This might integrate with Xero and a new CRM. We'll customize it with your service list, pricing structures, and standard terms.
+                    </li>
+                    <li>
+                        **Data Preparation & Input:** We'll help you gather and organize past quote templates, common job descriptions, and customer information to 'train' the AI. This ensures it generates accurate and relevant quotes.
+                    </li>
+                    <li>
+                        **Pilot Program & User Feedback:** We'll run a small pilot, perhaps with just you, on a few quotes. We'll gather your feedback on ease of use, accuracy, and any tweaks needed. This iterative process ensures the tool works *for* you.
+                    </li>
+                    <li>
+                        **Refinement & Iteration:** Based on pilot feedback, we'll refine the AI tool and its workflows. This might involve adjusting templates, improving AI prompts, or streamlining the automated follow-up sequences.
+                    </li>
+                    <li>
+                        **Full Rollout & Training:** Once refined, we'll roll out the system to the whole team. We'll provide hands-on training on how to use the new quoting tool, how to trigger automated follow-ups, and how to track quote status effectively.
+                    </li>
+                    <li>
+                        **Ongoing Review & Optimization:** We'll regularly check in to review performance metrics (e.g., how fast quotes are sent, conversion rates). We'll continue to optimize the AI's performance and suggest further improvements as your business evolves.
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Next Steps Tab Content -->
+        <section id="nextsteps-content" role="tabpanel" aria-labelledby="tab-nextsteps" class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 hidden">
+            <div class="bg-slate-100 text-slate-800 p-6 sm:p-8 rounded-xl shadow-xl">
+                <h2 class="text-3xl sm:text-4xl font-bold text-sky-700 mb-6 text-center">Let's Build Your Future, BMR Drainage!</h2>
+
+                <p class="text-lg text-slate-700 mb-4 text-center">
+                    This report is just the beginning – a look at the incredible potential AI holds for BMR Drainage. We've identified the pain points, sketched out the solutions, and even shown you the numbers.
+                </p>
+
+                <div class="bg-white p-6 rounded-lg shadow-lg my-6">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3">So, what's the big takeaway?</h3>
+                    <p class="text-slate-700 mb-2">
+                        For a hands-on drainage and maintenance business like yours, AI isn't some far-off sci-fi dream. It's a practical, powerful tool that can tackle your biggest headaches head-on. From getting more of the right leads and streamlining your quoting, to taming the admin beast and boosting your cash flow, AI is ready to work for you.
+                    </p>
+                    <p class="text-slate-700 mb-2">
+                        **The Upside for BMR Drainage:** Imagine less time chasing paperwork, more time on profitable jobs, happier customers, and a clear view of your business performance. That's the power of smart AI integration.
+                    </p>
+                    <p class="text-slate-700">
+                        **The Risk of Sticking with the Status Quo:** In today's competitive market, businesses that embrace efficiency and modern tools will pull ahead. Continuing with manual, scattered processes means lost leads, wasted time, and unnecessary stress.
+                    </p>
+                    <p class="text-slate-700 mt-4 font-semibold">
+                        TradieAI's ADOPT framework provides a clear, no-nonsense path to success, ensuring AI works for *your* business, not the other way around.
+                    </p>
+                </div>
+
+                <div class="bg-sky-600 text-white p-8 rounded-xl shadow-2xl text-center my-8">
+                    <h3 class="text-2xl sm:text-3xl font-bold mb-4">Ready to Transform Your Business?</h3>
+                    <p class="text-lg mb-6">
+                        This report is just the beginning. Let's have a proper yarn about how we can tailor these AI solutions to fit your business like a glove and get you some cracking results.
+                    </p>
+                    <a href="https://calendar.app.google/PtJaxyBVhkLyBE8Y8" target="_blank" rel="noopener noreferrer"
+                       class="mt-4 inline-block bg-amber-500 hover:bg-amber-600 text-black font-bold py-3 px-8 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105">
+                        Book Your Follow-Up Strategy Session
+                    </a>
+                </div>
+
+                <div class="mt-6 text-center">
+                    <p class="text-slate-700 mb-2">Drop us a line: <a href='mailto:tradiesai@gmail.com' class='text-sky-600 hover:underline'>tradiesai@gmail.com</a></p>
+                    <p class="text-slate-700">Or give Joe a bell: <a href='tel:021993285' class='text-sky-600 hover:underline'>021 993 285</a></p>
+                </div>
+
+                <p class="text-center text-slate-700 mt-8">
+                    Cheers for taking the time to go through this. Keen to chat soon!
+                </p>
+                <p class="text-center text-slate-700 font-bold mt-2">
+                    Joe Ward, TradieAI
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="bg-slate-800 text-slate-300 py-8 text-center text-sm">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="mb-1">AI Audit Report for BMR Drainage by TradieAI.</p>
+            <p class="mb-1">Copyright &copy; <span id="currentYear"></span> TradieAI. All Rights Reserved.</p>
+            <p>This report was generated on <span id="generationDate"></span>.</p>
+        </div>
+    </footer>
+
+    <script>
+        // JavaScript for dynamic year and tab switching
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set dynamic year
+            const year = new Date().getFullYear();
+            document.getElementById('headerYear').textContent = year;
+            document.getElementById('currentYear').textContent = year;
+
+            // Set generation date
+            const today = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('generationDate').textContent = today.toLocaleDateString('en-NZ', options);
+
+
+            // Tab switching logic
+            const tabs = document.querySelectorAll('[role="tab"]');
+            const tabPanels = document.querySelectorAll('[role="tabpanel"]');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetPanelId = tab.getAttribute('aria-controls');
+
+                    // Deactivate all tabs and hide all panels
+                    tabs.forEach(t => {
+                        t.setAttribute('aria-selected', 'false');
+                        t.classList.remove('tab-active');
+                        t.classList.add('tab-inactive');
+                    });
+                    tabPanels.forEach(p => p.classList.add('hidden'));
+
+                    // Activate clicked tab and show its panel
+                    tab.setAttribute('aria-selected', 'true');
+                    tab.classList.remove('tab-inactive');
+                    tab.classList.add('tab-active');
+                    document.getElementById(targetPanelId).classList.remove('hidden');
+
+                    // If the ROI tab is activated, ensure charts are rendered/updated
+                    if (targetPanelId === 'roi-content') {
+                        updateAdminROICalculations();
+                        updateQuotingROICalculations();
+                    }
+                });
+            });
+
+            // --- Interactive ROI Calculator Logic ---
+
+            // Admin Time Savings
+            const adminReductionSlider = document.getElementById('admin-reduction-slider');
+            const adminReductionValue = document.getElementById('admin-reduction-value');
+            const adminBaseHoursSlider = document.getElementById('admin-base-hours-slider');
+            const adminBaseHoursValue = document.getElementById('admin-base-hours-value');
+            const adminHoursSaved = document.getElementById('admin-hours-saved');
+            const adminMonetarySavings = document.getElementById('admin-monetary-savings');
+
+            const numberOfFieldStaff = 3; // Fixed parameter for BMR Drainage
+            const hourlyRate = 65; // Fixed parameter: Avg. loaded cost for an employee
+
+            // Display fixed parameters
+            document.getElementById('numberOfFieldStaffDisplay').textContent = numberOfFieldStaff;
+            document.getElementById('hourlyRateDisplay').textContent = hourlyRate;
+
+            let adminChart; // Declare chart variable globally for updates
+
+            function createAdminChart() {
+                const ctx = document.getElementById('admin-chart').getContext('2d');
+                adminChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Hours Before AI', 'Hours After AI'],
+                        datasets: [{
+                            label: 'Weekly Admin Hours per Person',
+                            data: [0, 0], // Initial data, will be updated
+                            backgroundColor: [
+                                'rgba(239, 68, 68, 0.7)', // Tailwind red-500
+                                'rgba(34, 197, 94, 0.7)' // Tailwind green-500
+                            ],
+                            borderColor: [
+                                'rgba(239, 68, 68, 1)',
+                                'rgba(34, 197, 94, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Admin Hours per Person (Weekly)'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Hours'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function updateAdminROICalculations() {
+                const reductionPercent = parseFloat(adminReductionSlider.value);
+                const baseHours = parseFloat(adminBaseHoursSlider.value);
+
+                adminReductionValue.textContent = `${reductionPercent}%`;
+                adminBaseHoursValue.textContent = `${baseHours} hrs`;
+
+                const hoursSavedPerPerson = baseHours * (reductionPercent / 100);
+                const totalHoursSaved = hoursSavedPerPerson * numberOfFieldStaff;
+                const totalMonetarySavings = totalHoursSaved * hourlyRate;
+
+                adminHoursSaved.textContent = totalHoursSaved.toFixed(0);
+                adminMonetarySavings.textContent = `$${totalMonetarySavings.toFixed(2)}`;
+
+                // Update chart data
+                const hoursAfter = baseHours * (1 - (reductionPercent / 100));
+                if (adminChart) {
+                    adminChart.data.datasets[0].data = [baseHours, hoursAfter];
+                    adminChart.update();
+                } else {
+                    createAdminChart(); // Create chart if it doesn't exist yet
+                    adminChart.data.datasets[0].data = [baseHours, hoursAfter];
+                    adminChart.update();
+                }
+            }
+
+            adminReductionSlider.addEventListener('input', updateAdminROICalculations);
+            adminBaseHoursSlider.addEventListener('input', updateAdminROICalculations);
+
+
+            // Quoting Process Efficiency
+            const quotesPerWeekSlider = document.getElementById('quotes-per-week-slider');
+            const quotesPerWeekValue = document.getElementById('quotes-per-week-value');
+            const timePerQuoteSlider = document.getElementById('time-per-quote-slider');
+            const timePerQuoteValue = document.getElementById('time-per-quote-value');
+            const aiTimeReductionSlider = document.getElementById('ai-time-reduction-slider');
+            const aiTimeReductionValue = document.getElementById('ai-time-reduction-value');
+            const quotingHoursSaved = document.getElementById('quoting-hours-saved');
+            const quotingAdditionalRevenue = document.getElementById('quoting-additional-revenue');
+
+            const avgRevenuePerQuote = 800; // Fixed parameter
+            document.getElementById('avgRevenuePerQuoteDisplay').textContent = avgRevenuePerQuote;
+
+            let quotingChart; // Declare chart variable globally for updates
+
+            function createQuotingChart() {
+                const ctx = document.getElementById('quoting-chart').getContext('2d');
+                quotingChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Time Before AI', 'Time After AI'],
+                        datasets: [{
+                            label: 'Time per Quote (hours)',
+                            data: [0, 0], // Initial data, will be updated
+                            backgroundColor: [
+                                'rgba(239, 68, 68, 0.7)', // Tailwind red-500
+                                'rgba(34, 197, 94, 0.7)' // Tailwind green-500
+                            ],
+                            borderColor: [
+                                'rgba(239, 68, 68, 1)',
+                                'rgba(34, 197, 94, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Time per Quote (Hours)'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Hours'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function updateQuotingROICalculations() {
+                const quotesPerWeek = parseFloat(quotesPerWeekSlider.value);
+                const timePerQuote = parseFloat(timePerQuoteSlider.value);
+                const aiReductionPercent = parseFloat(aiTimeReductionSlider.value);
+
+                quotesPerWeekValue.textContent = quotesPerWeek;
+                timePerQuoteValue.textContent = `${timePerQuote} hrs`;
+                aiTimeReductionValue.textContent = `${aiReductionPercent}%`;
+
+                const timePerQuoteAfterAI = timePerQuote * (1 - (aiReductionPercent / 100));
+                const hoursSavedPerQuote = timePerQuote - timePerQuoteAfterAI;
+                const totalHoursSavedWeekly = hoursSavedPerQuote * quotesPerWeek;
+
+                // Assuming saved hours can be used to generate more quotes
+                const additionalQuotesPossible = totalHoursSavedWeekly / timePerQuoteAfterAI; // Use the AI-assisted time for new quotes
+                const potentialAdditionalWeeklyRevenue = additionalQuotesPossible * avgRevenuePerQuote;
+
+                quotingHoursSaved.textContent = totalHoursSavedWeekly.toFixed(1);
+                quotingAdditionalRevenue.textContent = `$${potentialAdditionalWeeklyRevenue.toFixed(2)}`;
+
+                // Update chart data
+                if (quotingChart) {
+                    quotingChart.data.datasets[0].data = [timePerQuote, timePerQuoteAfterAI];
+                    quotingChart.update();
+                } else {
+                    createQuotingChart(); // Create chart if it doesn't exist yet
+                    quotingChart.data.datasets[0].data = [timePerQuote, timePerQuoteAfterAI];
+                    quotingChart.update();
+                }
+            }
+
+            quotesPerWeekSlider.addEventListener('input', updateQuotingROICalculations);
+            timePerQuoteSlider.addEventListener('input', updateQuotingROICalculations);
+            aiTimeReductionSlider.addEventListener('input', updateQuotingROICalculations);
+
+            // Initial calculations on page load for the first tab shown
+            // Only call if the ROI tab is the initially active one or when it becomes active
+            // For this setup, we'll call them when the ROI tab is clicked.
+            // If you want them to load immediately if ROI is default, you'd move these:
+            // updateAdminROICalculations();
+            // updateQuotingROICalculations();
+        });
+    </script>
+</body>
+</html>
