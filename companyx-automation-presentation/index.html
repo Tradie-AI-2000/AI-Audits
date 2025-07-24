@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Automation for Company X</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .tab-button {
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            @apply text-gray-700 bg-gray-200 hover:bg-blue-200 hover:text-blue-800;
+        }
+        .tab-button.active {
+            @apply bg-blue-600 text-white shadow-lg;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .card {
+            @apply bg-white p-6 rounded-xl shadow-md transition-all duration-300 ease-in-out;
+        }
+        .problem-box {
+            @apply bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg mb-4;
+        }
+        .solution-box {
+            @apply bg-green-50 border border-green-200 text-green-800 p-4 rounded-lg mb-4;
+        }
+        .metric-box {
+            @apply bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-lg text-center;
+        }
+        .interactive-diagram {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            background-color: #f9fafb;
+            position: relative;
+            overflow: hidden;
+        }
+        .flow-arrow {
+            position: absolute;
+            background-color: #3b82f6;
+            height: 4px;
+            border-radius: 2px;
+            transition: all 0.5s ease-in-out;
+            z-index: 10;
+        }
+        .flow-node {
+            @apply bg-blue-100 text-blue-800 p-3 rounded-lg shadow-sm text-sm font-medium flex items-center justify-center text-center;
+            min-height: 60px;
+            min-width: 120px;
+            position: relative;
+            z-index: 20;
+        }
+        .flow-node.highlight {
+            @apply bg-blue-600 text-white shadow-lg scale-105;
+        }
+        .comparison-slider-container {
+            width: 100%;
+            height: 200px; /* Fixed height for consistency */
+            background-color: #e2e8f0;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+        .comparison-slider-before, .comparison-slider-after {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.5s ease-in-out;
+            border-radius: 0.75rem;
+        }
+        .comparison-slider-before {
+            background-color: #fee2e2; /* Red-ish for problem */
+            color: #b91c1c;
+            transform: translateX(0);
+        }
+        .comparison-slider-after {
+            background-color: #d1fae5; /* Green-ish for solution */
+            color: #065f46;
+            transform: translateX(100%);
+        }
+        .slider-button {
+            @apply bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 transition-colors;
+        }
+
+        /* Chatbot styling */
+        .chatbot-container {
+            @apply bg-gray-100 p-4 rounded-xl shadow-inner max-w-md mx-auto;
+            height: 350px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chatbot-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            @apply bg-white p-3 rounded-lg mb-3;
+        }
+        .chatbot-message {
+            @apply p-2 rounded-lg mb-2;
+            max-width: 80%;
+        }
+        .chatbot-message.user {
+            @apply bg-blue-500 text-white ml-auto;
+            border-bottom-right-radius: 0;
+        }
+        .chatbot-message.bot {
+            @apply bg-gray-200 text-gray-800 mr-auto;
+            border-bottom-left-radius: 0;
+        }
+        .chatbot-input-area {
+            @apply flex;
+        }
+        .chatbot-input {
+            @apply flex-grow p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500;
+        }
+        .chatbot-send-button {
+            @apply ml-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors;
+        }
+
+        /* ROI Chart */
+        .roi-chart-container {
+            width: 100%;
+            height: 300px;
+            position: relative;
+        }
+        .bar-chart-bar {
+            background-color: #3b82f6;
+            position: absolute;
+            bottom: 0;
+            width: calc(100% / 5 - 10px); /* 5 bars, some spacing */
+            transition: height 1s ease-out;
+            border-radius: 0.5rem 0.5rem 0 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+            padding-bottom: 5px;
+        }
+        .bar-chart-label {
+            position: absolute;
+            bottom: -25px;
+            font-size: 0.875rem;
+            color: #4b5563;
+            text-align: center;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+    <header class="bg-white shadow-sm py-4 px-6 fixed top-0 left-0 w-full z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-blue-700">Flex Consulting</h1>
+            <nav class="flex space-x-4">
+                <button class="tab-button active" data-tab="intro">Introduction</button>
+                <button class="tab-button" data-tab="current-state">Current State Audit</button>
+                <button class="tab-button" data-tab="vision">Our Vision</button>
+                <button class="tab-button" data-tab="phase1">Phase 1: Sales Orders</button>
+                <button class="tab-button" data-tab="phase2">Phase 2: Inventory Sync</button>
+                <button class="tab-button" data-tab="phase3">Phase 3: Customer Service</button>
+                <button class="tab-button" data-tab="roi">ROI & Partnership</button>
+                <button class="tab-button" data-tab="next-steps">What's Next?</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl mx-auto py-8 px-6 mt-20">
+        <!-- Tab 1: Introduction & Executive Summary -->
+        <section id="intro" class="tab-content active">
+            <div class="card">
+                <h2 class="text-4xl font-extrabold text-blue-800 mb-6 text-center">Transforming Company X: The Power of Intelligent Automation</h2>
+                <p class="text-lg text-gray-700 mb-8 leading-relaxed">
+                    Welcome, Company X leadership. At Flex Consulting, we believe in the power of Intelligent Automation to unlock unprecedented efficiency, accuracy, and growth for large enterprises like yours. This presentation outlines our in-depth analysis of your current operations and presents a strategic, phased roadmap to revolutionize your business processes.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-blue-50 p-6 rounded-xl shadow-inner text-center">
+                        <h3 class="text-2xl font-semibold text-blue-700 mb-2">Efficiency Gains</h3>
+                        <p class="text-gray-600">Streamline workflows, reduce manual effort.</p>
+                    </div>
+                    <div class="bg-blue-50 p-6 rounded-xl shadow-inner text-center">
+                        <h3 class="text-2xl font-semibold text-blue-700 mb-2">Accuracy Boost</h3>
+                        <p class="text-gray-600">Minimize errors, ensure data integrity.</p>
+                    </div>
+                    <div class="bg-blue-50 p-6 rounded-xl shadow-inner text-center">
+                        <h3 class="text-2xl font-semibold text-blue-700 mb-2">Strategic Focus</h3>
+                        <p class="text-gray-600">Free up staff for high-value tasks.</p>
+                    </div>
+                </div>
+                <p class="text-xl text-gray-800 font-medium text-center">
+                    Our proposed solutions are designed to deliver a significant <span class="text-blue-600 font-bold">Return on Investment (ROI)</span>, enhancing your competitive edge in the healthcare distribution market.
+                </p>
+            </div>
+        </section>
+
+        <!-- Tab 2: Current State Analysis (The Audit) -->
+        <section id="current-state" class="tab-content">
+            <div class="card">
+                <h2 class="text-4xl font-extrabold text-blue-800 mb-6 text-center">Current State Audit: Identifying Key Bottlenecks</h2>
+                <p class="text-lg text-gray-700 mb-8 leading-relaxed">
+                    Our initial audit revealed critical areas where manual processes are hindering Company X's operational efficiency, increasing costs, and impacting customer satisfaction. Let's explore these in detail.
+                </p>
+
+                <!-- Problem 1: Manual Sales Order Processing -->
+                <div class="mb-10">
+                    <h3 class="text-3xl font-bold text-red-700 mb-4">Problem 1: Manual Sales Order Processing</h3>
+                    <div class="problem-box">
+                        <p class="font-semibold mb-2">Description:</p>
+                        <p class="mb-3">Incoming sales orders arrive via diverse channels: email (PDF attachments, text in body), web portal downloads (CSV), and even legacy fax. Each order requires manual extraction of customer details, product codes, quantities, and pricing, followed by manual entry into your central ERP system.</p>
+                        <p class="font-semibold mb-2">Why it's a bottleneck:</p>
+                        <ul class="list-disc list-inside mb-3">
+                            <li><span class="font-medium">High Volume:</span> Hundreds of orders daily overwhelm staff.</li>
+                            <li><span class="font-medium">Human Error:</span> Typographical errors, misinterpretations, and omissions are frequent.</li>
+                            <li><span class="font-medium">Disparate Formats:</span> Data extraction varies significantly across channels, requiring constant adaptation.</li>
+                            <li><span class="font-medium">Lack of Real-time Validation:</span> Errors are often caught much later in the fulfillment process.</li>
+                        </ul>
+                        <p class="font-semibold mb-2">Impacts:</p>
+                        <ul class="list-disc list-inside">
+                            <li><span class="font-medium">Delayed Deliveries:</span> Average order processing time of <span class="font-bold">45 minutes</span> per order.</li>
+                            <li><span class="font-medium">Customer Dissatisfaction:</span> Incorrect orders or late shipments lead to complaints and lost loyalty.</li>
+                            <li><span class="font-medium">High Cost of Errors:</span> Estimated <span class="font-bold">$85 per error</span> (rework, reshipment, customer service time).</li>
+                            <li><span class="font-medium">Staff Burnout:</span> Repetitive, tedious work leads to low morale and high turnover.</li>
+                        </ul>
+                    </div>
+
+                    <h4 class="text-xl font-semibold text-gray-700 mb-3">Interactive Flow: Manual Order Processing</h4>
+                    <div class="interactive-diagram grid grid-cols-5 gap-4 items-center">
+                        <div class="flow-node" id="node1">Customer Order (Email/Web/Fax)</div>
+                        <div class="flow-node" id="node2">Manual Data Extraction</div>
+                        <div class="flow-node" id="node3">Manual ERP Entry</div>
+                        <div class="flow-node" id="node4">Basic Validation</div>
+                        <div class="flow-node" id="node5">Order Processed</div>
+
+                        <div class="flow-arrow" style="left: 15%; top: 50%; width: 15%;"></div>
+                        <div class="flow-arrow" style="left: 35%; top: 50%; width: 15%;"></div>
+                        <div class="flow-arrow" style="left: 55%; top: 50%; width: 15%;"></div>
+                        <div class="flow-arrow" style="left: 75%; top: 50%; width: 15%;"></div>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2 text-center">Click on each step to see the associated bottleneck.</p>
+                </div>
+
+                <!-- Problem 2: Disconnected Inventory & ERP Systems -->
+                <div class="mb-10">
+                    <h3 class="text-3xl font-bold text-red-700 mb-4">Problem 2: Disconnected Inventory & ERP Systems</h3>
+                    <div class="problem-box">
+                        <p class="font-semibold mb-2">Description:</p>
+                        <p class="mb-3">Your Inventory Management System (IMS) and Enterprise Resource Planning (ERP) system operate largely in silos. Stock movements (receipts, dispatches) are recorded in the IMS, but require manual data transfer and reconciliation into the ERP for financial tracking and sales order fulfillment validation.</p>
+                        <p class="font-semibold mb-2">Why it's a bottleneck:</p>
+                        <ul class="list-disc list-inside mb-3">
+                            <li><span class="font-medium">Manual Data Transfer:</span> Staff copy-pasting or re-keying data between systems.</li>
+                            <li><span class="font-medium">Lag in Updates:</span> ERP stock levels are not real-time, leading to discrepancies.</li>
+                            <li><span class="font-medium">Reconciliation Efforts:</span> Weekly or daily manual reconciliation processes to identify and correct discrepancies.</li>
+                            <li><span class="font-medium">Error Propagation:</span> Errors in one system are manually transferred to another.</li>
+                        </ul>
+                        <p class="font-semibold mb-2">Impacts:</p>
+                        <ul class="list-disc list-inside">
+                            <li><span class="font-medium">Stockouts/Overstocking:</span> Inaccurate visibility leads to missed sales or excess holding costs.</li>
+                            <li><span class="font-medium">Inaccurate Reporting:</span> Financial and operational reports are based on outdated or incorrect data.</li>
+                            <li><span class="font-medium">Wasted Staff Time:</span> Approximately <span class="font-bold">15-20 hours per week</span> spent on manual reconciliation.</li>
+                            <li><span class="font-medium">Order Fulfillment Delays:</span> Orders approved against incorrect stock levels lead to backorders and customer frustration.</li>
+                        </ul>
+                    </div>
+
+                    <h4 class="text-xl font-semibold text-gray-700 mb-3">Interactive: Manual Data Sync Visualizer</h4>
+                    <div class="comparison-slider-container">
+                        <div class="comparison-slider-before" id="sync-before">
+                            <p>Manual Sync: Slow & Error-Prone</p>
+                            <img src="https://placehold.co/80x80/b91c1c/ffffff?text=IMS" alt="IMS Icon" class="absolute top-4 left-4 rounded-full">
+                            <img src="https://placehold.co/80x80/b91c1c/ffffff?text=ERP" alt="ERP Icon" class="absolute bottom-4 right-4 rounded-full">
+                            <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl">🚶‍♂️</span>
+                            <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm mt-10">Manual Transfer</span>
+                        </div>
+                        <div class="comparison-slider-after" id="sync-after">
+                            <p>Automated Sync: Fast & Accurate</p>
+                            <img src="https://placehold.co/80x80/065f46/ffffff?text=IMS" alt="IMS Icon" class="absolute top-4 left-4 rounded-full">
+                            <img src="https://placehold.co/80x80/065f46/ffffff?text=ERP" alt="ERP Icon" class="absolute bottom-4 right-4 rounded-full">
+                            <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl">⚡</span>
+                            <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm mt-10">API Integration</span>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button id="toggleSync" class="slider-button">Show Automated Sync</button>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2 text-center">Click the button to visualize the difference between manual and automated synchronization.</p>
+                </div>
+
+                <!-- Problem 3: Routine Customer Service Queries -->
+                <div class="mb-10">
+                    <h3 class="text-3xl font-bold text-red-700 mb-4">Problem 3: Routine Customer Service Queries</h3>
+                    <div class="problem-box">
+                        <p class="font-semibold mb-2">Description:</p>
+                        <p class="mb-3">Your customer service team is inundated with high volumes of repetitive inquiries, such as "What's my order status?", "Do you have X product in stock?", or "What's the return policy?". These queries consume significant agent time that could be spent on complex issues or proactive customer engagement.</p>
+                        <p class="font-semibold mb-2">Why it's a bottleneck:</p>
+                        <ul class="list-disc list-inside mb-3">
+                            <li><span class="font-medium">High Volume, Low Value:</span> Many queries are easily answerable with existing data.</li>
+                            <li><span class="font-medium">Agent Time Drain:</span> Each routine query takes away from complex problem-solving.</li>
+                            <li><span class="font-medium">Inconsistent Responses:</span> Different agents may provide slightly varied answers.</li>
+                            <li><span class="font-medium">24/7 Demand:</span> Customers expect immediate answers, even outside business hours.</li>
+                        </ul>
+                        <p class="font-semibold mb-2">Impacts:</p>
+                        <ul class="list-disc list-inside">
+                            <li><span class="font-medium">Slow Response Times:</span> Average query resolution time of <span class="font-bold">15 minutes</span> for routine questions.</li>
+                            <li><span class="font-medium">Lower Customer Satisfaction:</span> Customers frustrated by waiting for simple answers.</li>
+                            <li><span class="font-medium">Increased Operational Costs:</span> High staffing levels required to manage query volume.</li>
+                            <li><span class="font-medium">Reduced Agent Productivity:</span> Agents spend <span class="font-bold">~60% of their time</span> on repetitive tasks.</li>
+                        </ul>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                        <div class="metric-box">
+                            <p class="text-4xl font-bold">70%</p>
+                            <p class="text-lg">of queries are routine & repetitive</p>
+                        </div>
+                        <div class="metric-box">
+                            <p class="text-4xl font-bold">250+</p>
+                            <p class="text-lg">Routine queries per day</p>
+                        </div>
+                        <div class="metric-box">
+                            <p class="text-4xl font-bold">30%</p>
+                            <p class="text-lg">Potential cost savings in CS</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 3: Our Intelligent Automation Vision -->
+        <section id="vision" class="tab-content">
+            <div class="card">
+                <h2 class="text-4xl font-extrabold text-blue-800 mb-6 text-center">Our Intelligent Automation Vision for Company X</h2>
+                <p class="text-lg text-gray-700 mb-8 leading-relaxed">
+                    Flex Consulting proposes a strategic, phased approach to implement Intelligent Automation across your operations. This isn't just about automating tasks; it's about building a more resilient, agile, and customer-centric business.
+                </p>
+
+                <h3 class="text-3xl font-bold text-blue-700 mb-4">What is Intelligent Automation?</h3>
+                <p class="text-lg text-gray-700 mb-6">
+                    Intelligent Automation combines the power of <span class="font-semibold text-blue-600">Robotic Process Automation (RPA)</span> with advanced <span class="font-semibold text-blue-600">Artificial Intelligence (AI)</span> capabilities like Machine Learning (ML), Natural Language Processing (NLP), and Computer Vision. It allows us to automate not just repetitive, rule-based tasks, but also tasks that require cognitive abilities, decision-making, and understanding unstructured data.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-blue-50 p-6 rounded-xl shadow-inner text-center">
+                        <h4 class="text-2xl font-semibold text-blue-700 mb-2">RPA: The Digital Workforce</h4>
+                        <p class="text-gray-600">Automating repetitive, high-volume tasks at the UI level.</p>
+                    </div>
+                    <div class="bg-blue-50 p-6 rounded-xl shadow-inner text-center">
+                        <h4 class="text-2xl font-semibold text-blue-700 mb-2">AI: The Intelligent Brain</h4>
+                        <p class="text-gray-600">Adding cognitive capabilities: understanding, learning, predicting.</p>
+                    </div>
+                    <div class="bg-blue-50 p-6 rounded-xl shadow-inner text-center">
+                        <h4 class="text-2xl font-semibold text-blue-700 mb-2">Orchestration: The Conductor</h4>
+                        <p class="text-gray-600">Coordinating tasks, systems, and human intervention across end-to-end processes.</p>
+                    </div>
+                </div>
+
+                <h3 class="text-3xl font-bold text-blue-700 mb-4">Our Phased Approach for Company X</h3>
+                <p class="text-lg text-gray-700 mb-6">
+                    We recommend a strategic, modular implementation to ensure quick wins, measurable ROI, and seamless integration.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                    <div class="bg-green-100 p-6 rounded-xl shadow-md">
+                        <h4 class="text-2xl font-semibold text-green-800 mb-2">Phase 1: Sales Order Processing</h4>
+                        <p class="text-green-700">Rapid automation of core data entry for immediate impact.</p>
+                    </div>
+                    <div class="bg-green-100 p-6 rounded-xl shadow-md">
+                        <h4 class="text-2xl font-semibold text-green-800 mb-2">Phase 2: Integrated Inventory Management</h4>
+                        <p class="text-green-700">Achieving real-time data synchronization and accuracy.</p>
+                    </div>
+                    <div class="bg-green-100 p-6 rounded-xl shadow-md">
+                        <h4 class="text-2xl font-semibold text-green-800 mb-2">Phase 3: Enhanced Customer Service</h4>
+                        <p class="text-green-700">Leveraging AI to empower customers and agents.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 4: Phase 1: Streamlining Sales Order Processing (RPA & Orchestration) -->
+        <section id="phase1" class="tab-content">
+            <div class="card">
+                <h2 class="text-4xl font-extrabold text-blue-800 mb-6 text-center">Phase 1: Revolutionizing Sales Order Processing</h2>
+                <p class="text-lg text-gray-700 mb-8 leading-relaxed">
+                    This phase targets your most critical bottleneck, sales order processing, delivering immediate and significant improvements in speed and accuracy.
+                </p>
+
+                <h3 class="text-3xl font-bold text-green-700 mb-4">The Solution: UiPath RPA & Micro Focus Orchestration</h3>
+                <div class="solution-box">
+                    <p class="mb-3">We will deploy a <span class="font-semibold">UiPath RPA bot</span> to act as your digital data entry clerk, capable of handling diverse order formats. This bot will be seamlessly integrated into an end-to-end workflow orchestrated by <span class="font-semibold">Micro Focus</span>, ensuring every step from order receipt to ERP entry and beyond is managed efficiently.</p>
+                    <p class="font-semibold mb-2">How it will work:</p>
+                    <ul class="list-disc list-inside mb-3">
+                        <li><span class="font-medium">Automated Order Ingestion:</span> The UiPath bot will continuously monitor designated email inboxes, web portal folders, and even process scanned faxes using OCR (Optical Character Recognition).</li>
+                        <li><span class="font-medium">Intelligent Data Extraction:</span> Leveraging AI capabilities within UiPath, the bot will intelligently extract relevant data fields (customer ID, product SKUs, quantities, delivery dates) from various document layouts, even unstructured text.</li>
+                        <li><span class="font-medium">Automated Validation & Enrichment:</span> The extracted data will be instantly validated against your ERP's master data. Any discrepancies will be flagged for human review, or automatically enriched where possible (e.g., pulling customer details from ID).</li>
+                        <li><span class="font-medium">Seamless ERP Entry:</span> The bot will then log into your ERP system and accurately input all validated order details, mimicking a human user but at lightning speed and with zero errors.</li>
+                        <li><span class="font-medium">Micro Focus Orchestration:</span> This platform will oversee the entire process:
+                            <ul class="list-circle list-inside ml-5">
+                                <li>Triggering the UiPath bot upon new order detection.</li>
+                                <li>Initiating automated credit checks via API integration with your financial system.</li>
+                                <li>Directing the bot to allocate inventory in the ERP.</li>
+                                <li>Sending automated order confirmations to customers.</li>
+                                <li>Escalating exceptions (e.g., credit hold, missing data) to a human for review.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <h3 class="text-3xl font-bold text-blue-700 mb-4">Interactive Flow: Automated Order Processing</h3>
+                <div class="interactive-diagram grid grid-cols-6 gap-4 items-center">
+                    <div class="flow-node highlight" id="auto-node1">Customer Order (Multi-Channel)</div>
+                    <div class="flow-node" id="auto-node2">UiPath Bot (OCR/Extraction)</div>
+                    <div class="flow-node" id="auto-node3">Micro Focus Orchestration</div>
+                    <div class="flow-node" id="auto-node4">ERP System (Automated Entry)</div>
+                    <div class="flow-node" id="auto-node5">Automated Validation & Checks</div>
+                    <div class="flow-node" id="auto-node6">Order Processed & Confirmed</div>
+
+                    <div class="flow-arrow" style="left: 10%; top: 50%; width: 10%;"></div>
+                    <div class="flow-arrow" style="left: 26%; top: 50%; width: 10%;"></div>
+                    <div class="flow-arrow" style="left: 42%; top: 50%; width: 10%;"></div>
+                    <div class="flow-arrow" style="left: 58%; top: 50%; width: 10%;"></div>
+                    <div class="flow-arrow" style="left: 74%; top: 50%; width: 10%;"></div>
+                </div>
+                <p class="text-sm text-gray-500 mt-2 text-center">Watch the automated flow in action. Click to highlight steps.</p>
+                <div class="text-center mt-4">
+                    <button id="startAutomationFlow" class="slider-button">Start Automated Flow Simulation</button>
+                </div>
+
+
+                <h3 class="text-3xl font-bold text-blue-700 mb-4 mt-8">Expected Results: Phase 1</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="metric-box">
+                        <p class="text-4xl font-bold">90%</p>
+                        <p class="text-lg">Reduction in Manual Order Entry Time</p>
+                        <p class="text-sm text-gray-600">(From 45 mins to <span class="font-semibold">~4.5 mins</span> per order)</p>
+                    </div>
+                    <div class="metric-box">
+                        <p class="text-4xl font-bold">99.9%</p>
+                        <p class="text-lg">Order Entry Accuracy</p>
+                        <p class="text-sm text-gray-600">(Virtually eliminating <span class="font-semibold">$85/error</span> cost)</p>
+                    </div>
+                    <div class="metric-box">
+                        <p class="text-4xl font-bold">30%+</p>
+                        <p class="text-lg">Faster Order-to-Ship Cycle</p>
+                        <p class="text-sm text-gray-600">(Leading to improved customer satisfaction)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 5: Phase 2: Integrated Inventory Management (APIs & Database) -->
+        <section id="phase2" class="tab-content">
+            <div class="card">
+                <h2 class="text-4xl font-extrabold text-blue-800 mb-6 text-center">Phase 2: Achieving Real-time Inventory Accuracy</h2>
+                <p class="text-lg text-gray-700 mb-8 leading-relaxed">
+                    This phase focuses on eliminating manual reconciliation between your IMS and ERP, providing a single, accurate source of truth for inventory.
+                </p>
+
+                <h3 class="text-3xl font-bold text-green-700 mb-4">The Solution: Robust API Integrations & Database Optimization</h3>
+                <div class="solution-box">
+                    <p class="mb-3">We will establish <span class="font-semibold">direct API (Application Programming Interface) integrations</span> between your Inventory Management System (IMS) and your ERP. This will ensure real-time data flow, eliminating manual data transfer and reconciliation efforts. We will also optimize database structures (leveraging both SQL and NoSQL principles as needed) for efficient data access and reporting.</p>
+                    <p class="font-semibold mb-2">How it will work:</p>
+                    <ul class="list-disc list-inside mb-3">
+                        <li><span class="font-medium">Event-Driven Data Sync:</span> When stock is received in the IMS, an event triggers an API call to update the corresponding stock levels in the ERP instantly. Similarly, when an order is fulfilled in the ERP, stock is automatically reduced in the IMS.</li>
+                        <li><span class="font-medium">Bidirectional Data Flow:</span> Ensuring that changes in one system are immediately reflected in the other, maintaining data consistency across your operations.</li>
+                        <li><span class="font-medium">Custom Data Connectors:</span> For systems without direct APIs, we can build custom connectors using scripting languages (e.g., Python) to facilitate secure and efficient data exchange.</li>
+                        <li><span class="font-medium">Centralized Data Repository:</span> Implement a robust data warehousing strategy (potentially using Google Cloud's BigQuery or a similar solution) to aggregate data from both IMS and ERP for advanced analytics and reporting, providing a unified view of your inventory and sales.</li>
+                        <li><span class="font-medium">Automated Discrepancy Reporting:</span> While aiming for 100% sync, the system will automatically flag any rare discrepancies for immediate human review, significantly reducing manual reconciliation time.</li>
+                    </ul>
+                </div>
+
+                <h3 class="text-3xl font-bold text-blue-700 mb-4">Interactive: Real-time Inventory Sync</h3>
+                <div class="interactive-diagram relative h-64 flex items-center justify-center">
+                    <div class="absolute left-10 top-1/2 -translate-y-1/2 flow-node highlight">Inventory Management System (IMS)</div>
+                    <div class="absolute right-10 top-1/2 -translate-y-1/2 flow-node highlight">Enterprise Resource Planning (ERP)</div>
+                    <div id="api-connection" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+                        <div class="text-5xl text-blue-600 mb-2">↔️</div>
+                        <p class="font-semibold text-blue-700">API Integration</p>
+                        <p class="text-sm text-gray-600">Real-time Data Flow</p>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-500 mt-2 text-center">Visualize the seamless, real-time connection between your core systems.</p>
+
+
+                <h3 class="text-3xl font-bold text-blue-700 mb-4 mt-8">Expected Results: Phase 2</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="metric-box">
+                        <p class="text-4xl font-bold">99%+</p>
+                        <p class="text-lg">Inventory Accuracy</p>
+                        <p class="text-sm text-gray-600">(Eliminating stockouts & overstocking costs)</p>
+                    </div>
+                    <div class="metric-box">
+                        <p class="text-4xl font-bold">95%</p>
+                        <p class="text-lg">Reduction in Manual Reconciliation Time</p>
+                        <p class="text-sm text-gray-600">(Freeing up <span class="font-semibold">~19 hours/week</span>)</p>
+                    </div>
+                    <div class="metric-box">
+                        <p class="text-4xl font-bold">Real-time</p>
+                        <p class="text-lg">Reporting & Forecasting</p>
+                        <p class="text-sm text-gray-600">(For proactive decision-making)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 6: Phase 3: Enhancing Customer Service (AI & NLP) -->
+        <section id="phase3" class="tab-content">
+            <div class="card">
+                <h2 class="text-4xl font-extrabold text-blue-800 mb-6 text-center">Phase 3: Empowering Customer Service with AI</h2>
+                <p class="text-lg text-gray-700 mb-8 leading-relaxed">
+                    This phase introduces advanced AI capabilities to handle routine customer inquiries, freeing your human agents to focus on complex, high-value interactions.
+                </p>
+
+                <h3 class="text-3xl font-bold text-green-700 mb-4">The Solution: AI-Powered Virtual Assistant & NLP for Email Routing</h3>
+                <div class="solution-box">
+                    <p class="mb-3">We will implement an <span class="font-semibold">AI-powered virtual assistant (chatbot)</span> integrated with your systems, capable of understanding and responding to common customer queries. For email inquiries, we'll leverage <span class="font-semibold">Natural Language Processing (NLP)</span> to intelligently route and prioritize messages.</p>
+                    <p class="font-semibold mb-2">How it will work:</p>
+                    <ul class="list-disc list-inside mb-3">
+                        <li><span class="font-medium">24/7 Virtual Assistant:</span> A chatbot, powered by a robust AI engine (e.g., Google Cloud's Dialogflow or Microsoft Azure Bot Service), will be deployed on your website and potentially integrated into messaging apps.
+                            <ul class="list-circle list-inside ml-5">
+                                <li>It will answer FAQs about products, policies, and common issues.</li>
+                                <li>It will securely retrieve and provide real-time order status updates by querying your ERP via API.</li>
+                                <li>It can check product availability by integrating with your IMS.</li>
+                                <li>For complex queries, it will seamlessly hand over to a human agent with full context.</li>
+                            </ul>
+                        </li>
+                        <li><span class="font-medium">Intelligent Email Triage with NLP:</span> Incoming customer service emails will be automatically analyzed using NLP.
+                            <ul class="list-circle list-inside ml-5">
+                                <li>The AI will understand the intent and sentiment of the email (e.g., "order complaint," "product inquiry," "delivery issue").</li>
+                                <li>Emails will be automatically categorized and routed to the correct department or specialist agent.</li>
+                                <li>Urgent or negative sentiment emails will be flagged for priority handling.</li>
+                            </ul>
+                        </li>
+                        <li><span class="font-medium">Agent Assist Tools:</span> For human agents, the AI can suggest responses, pull relevant information from knowledge bases, and summarize customer history, further boosting their efficiency.</li>
+                    </ul>
+                </div>
+
+                <h3 class="text-3xl font-bold text-blue-700 mb-4">Interactive: Chatbot Simulation</h3>
+                <div class="chatbot-container">
+                    <div class="chatbot-messages" id="chatbotMessages">
+                        <div class="chatbot-message bot">Hello! How can I assist you today?</div>
+                    </div>
+                    <div class="chatbot-input-area">
+                        <input type="text" id="chatbotInput" class="chatbot-input" placeholder="Type your message...">
+                        <button id="chatbotSend" class="chatbot-send-button">Send</button>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-500 mt-2 text-center">Experience a simplified simulation of your future AI assistant.</p>
+
+                <h3 class="text-3xl font-bold text-blue-700 mb-4 mt-8">Expected Results: Phase 3</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="metric-box">
+                        <p class="text-4xl font-bold">70%</p>
+                        <p class="text-lg">Automation of Routine Queries</p>
+                        <p class="text-sm text-gray-600">(24/7 availability for customers)</p>
+                    </div>
+                    <div class="metric-box">
+                        <p class="text-4xl font-bold">50%</p>
+                        <p class="text-lg">Faster Email Triage & Routing</p>
+                        <p class="text-sm text-gray-600">(Reduced agent workload)</p>
+                    </div>
+                    <div class="metric-box">
+                        <p class="text-4xl font-bold">15%+</p>
+                        <p class="text-lg">Increase in Customer Satisfaction</p>
+                        <p class="text-sm text-gray-600">(Through instant, accurate responses)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 7: The ROI & Our Partnership -->
+        <section id="roi" class="tab-content">
+            <div class="card">
+                <h2 class="text-4xl font-extrabold text-blue-800 mb-6 text-center">The Compelling ROI & Our Partnership with Company X</h2>
+                <p class="text-lg text-gray-700 mb-8 leading-relaxed">
+                    The investment in Intelligent Automation with Flex Consulting is not just about technology; it's about strategic growth and measurable financial returns.
+                </p>
+
+                <h3 class="text-3xl font-bold text-green-700 mb-4">Consolidated ROI Projections (Annual Savings)</h3>
+                <p class="text-lg text-gray-700 mb-6">
+                    Based on our analysis and industry benchmarks, we project significant annual operational cost savings and efficiency gains for Company X.
+                </p>
+                <div class="roi-chart-container relative">
+                    <div class="absolute inset-0 flex items-end justify-around pb-10">
+                        <div class="bar-chart-bar" style="left: 0%; height: 20%;" data-value="50000"></div>
+                        <div class="bar-chart-bar" style="left: 20%; height: 40%;" data-value="100000"></div>
+                        <div class="bar-chart-bar" style="left: 40%; height: 60%;" data-value="150000"></div>
+                        <div class="bar-chart-bar" style="left: 60%; height: 80%;" data-value="200000"></div>
+                        <div class="bar-chart-bar" style="left: 80%; height: 100%;" data-value="250000"></div>
+                    </div>
+                    <div class="absolute inset-0 flex items-end justify-around pb-4">
+                        <div class="bar-chart-label" style="left: 0%;">Year 1</div>
+                        <div class="bar-chart-label" style="left: 20%;">Year 2</div>
+                        <div class="bar-chart-label" style="left: 40%;">Year 3</div>
+                        <div class="bar-chart-label" style="left: 60%;">Year 4</div>
+                        <div class="bar-chart-label" style="left: 80%;">Year 5</div>
+                    </div>
+                    <div class="absolute left-0 top-0 h-full w-full flex flex-col justify-between py-2 text-gray-600 text-sm">
+                        <span class="absolute top-0 left-0 -translate-y-1/2">$250K</span>
+                        <span class="absolute top-1/4 left-0 -translate-y-1/2">$187.5K</span>
+                        <span class="absolute top-1/2 left-0 -translate-y-1/2">$125K</span>
+                        <span class="absolute top-3/4 left-0 -translate-y-1/2">$62.5K</span>
+                        <span class="absolute bottom-0 left-0 -translate-y-1/2">$0</span>
+                    </div>
+                    <div class="absolute left-0 top-0 h-full w-full border-l border-b border-gray-300"></div>
+                </div>
+                <p class="text-sm text-gray-500 mt-8 text-center">Projected cumulative annual operational cost savings. Values will appear on bars.</p>
+
+                <h3 class="text-3xl font-bold text-blue-700 mb-4 mt-8">Why Partner with Flex Consulting?</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-blue-50 p-6 rounded-xl shadow-inner">
+                        <h4 class="text-2xl font-semibold text-blue-700 mb-2">Deep Expertise & Proven Platforms</h4>
+                        <p class="text-gray-600">We are experts in enterprise process orchestration and RPA, leveraging industry-leading platforms like <span class="font-bold">UiPath</span> and <span class="font-bold">Micro Focus</span>. As a <span class="font-bold">Microsoft Partner</span>, we seamlessly integrate with your existing enterprise ecosystem.</p>
+                    </div>
+                    <div class="bg-blue-50 p-6 rounded-xl shadow-inner">
+                        <h4 class="text-2xl font-semibold text-blue-700 mb-2">End-to-End Partnership</h4>
+                        <p class="text-gray-600">From initial audit and solution design to implementation, deployment, and ongoing 24/7 support, Flex provides a complete service to ensure your automation success.</p>
+                    </div>
+                    <div class="bg-blue-50 p-6 rounded-xl shadow-inner">
+                        <h4 class="text-2xl font-semibold text-blue-700 mb-2">Focus on Measurable ROI</h4>
+                        <p class="text-gray-600">Our solutions are designed with your business objectives in mind, ensuring clear, quantifiable returns on your automation investment.</p>
+                    </div>
+                    <div class="bg-blue-50 p-6 rounded-xl shadow-inner">
+                        <h4 class="text-2xl font-semibold text-blue-700 mb-2">Agile & Adaptable Approach</h4>
+                        <p class="text-gray-600">We understand the dynamic nature of business. Our phased implementation allows for flexibility and continuous optimization, ensuring solutions evolve with your needs.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 8: What's Next? -->
+        <section id="next-steps" class="tab-content">
+            <div class="card text-center py-12">
+                <h2 class="text-5xl font-extrabold text-blue-800 mb-8">What's Next for Company X?</h2>
+                <p class="text-2xl text-gray-700 mb-10 leading-relaxed">
+                    You've seen the challenges, the vision, and the tangible benefits of Intelligent Automation. The journey to a more efficient, accurate, and customer-centric Company X begins now.
+                </p>
+                <div class="bg-blue-100 p-8 rounded-xl shadow-lg inline-block">
+                    <h3 class="text-4xl font-bold text-blue-700 mb-4">Let's Discuss How We Can Start This Transformation Journey Together!</h3>
+                    <p class="text-xl text-gray-800">We're ready to partner with you to turn this vision into reality.</p>
+                    <button class="mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-full shadow-lg transition-all duration-300 text-2xl">
+                        Schedule a Deep Dive Session
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white py-4 px-6 mt-auto">
+        <div class="max-w-7xl mx-auto text-center text-sm">
+            &copy; 2025 Flex Consulting. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            // Function to activate a tab
+            const activateTab = (tabId) => {
+                tabButtons.forEach(button => {
+                    if (button.dataset.tab === tabId) {
+                        button.classList.add('active');
+                    } else {
+                        button.classList.remove('active');
+                    }
+                });
+                tabContents.forEach(content => {
+                    if (content.id === tabId) {
+                        content.classList.add('active');
+                    } else {
+                        content.classList.remove('active');
+                    }
+                });
+            };
+
+            // Event listener for tab buttons
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    activateTab(button.dataset.tab);
+                });
+            });
+
+            // Initial tab activation
+            activateTab('intro');
+
+            // --- Interactive Components Logic ---
+
+            // Problem 1 Flow Diagram (Current State)
+            const flowNodes = document.querySelectorAll('#current-state .flow-node');
+            const flowArrows = document.querySelectorAll('#current-state .flow-arrow');
+            const bottleneckMessages = {
+                'node1': 'Problem: Diverse, unstructured order sources require manual handling.',
+                'node2': 'Bottleneck: Slow, error-prone manual data extraction from various formats.',
+                'node3': 'Bottleneck: High risk of errors during manual ERP data entry.',
+                'node4': 'Bottleneck: Basic validation catches errors late, leading to costly rework.',
+                'node5': 'Result: Delayed processing, customer dissatisfaction, high operational costs.'
+            };
+
+            let currentFlowIndex = -1;
+            const highlightFlowStep = (index) => {
+                flowNodes.forEach((node, i) => {
+                    node.classList.remove('highlight');
+                    node.style.backgroundColor = '#bfdbfe'; // Reset to default blue-100
+                    node.style.color = '#1e40af'; // Reset to default blue-800
+                });
+                flowArrows.forEach(arrow => arrow.style.backgroundColor = '#3b82f6'); // Reset arrow color
+
+                if (index !== -1) {
+                    const nodeToHighlight = flowNodes[index];
+                    if (nodeToHighlight) {
+                        nodeToHighlight.classList.add('highlight');
+                        nodeToHighlight.style.backgroundColor = '#ef4444'; // Red for problem
+                        nodeToHighlight.style.color = 'white';
+                        // Display message (could use a dedicated div, for now console log)
+                        console.log(bottleneckMessages[nodeToHighlight.id]);
+                    }
+                    if (index > 0 && flowArrows[index - 1]) {
+                        flowArrows[index - 1].style.backgroundColor = '#b91c1c'; // Red for bottleneck
+                    }
+                }
+            };
+
+            flowNodes.forEach((node, index) => {
+                node.addEventListener('click', () => {
+                    highlightFlowStep(index);
+                });
+            });
+
+            // Problem 2 Sync Visualizer
+            const toggleSyncButton = document.getElementById('toggleSync');
+            const syncBefore = document.getElementById('sync-before');
+            const syncAfter = document.getElementById('sync-after');
+            let isAutomated = false;
+
+            toggleSyncButton.addEventListener('click', () => {
+                if (isAutomated) {
+                    syncBefore.style.transform = 'translateX(0)';
+                    syncAfter.style.transform = 'translateX(100%)';
+                    toggleSyncButton.textContent = 'Show Automated Sync';
+                } else {
+                    syncBefore.style.transform = 'translateX(-100%)';
+                    syncAfter.style.transform = 'translateX(0)';
+                    toggleSyncButton.textContent = 'Show Manual Sync';
+                }
+                isAutomated = !isAutomated;
+            });
+
+            // Phase 1 Automated Flow Simulation
+            const autoFlowNodes = document.querySelectorAll('#phase1 .flow-node');
+            const autoFlowArrows = document.querySelectorAll('#phase1 .flow-arrow');
+            const startAutomationFlowButton = document.getElementById('startAutomationFlow');
+
+            const resetAutoFlow = () => {
+                autoFlowNodes.forEach(node => {
+                    node.classList.remove('highlight');
+                    node.style.backgroundColor = '#bfdbfe'; // Reset to default blue-100
+                    node.style.color = '#1e40af'; // Reset to default blue-800
+                });
+                autoFlowArrows.forEach(arrow => {
+                    arrow.style.backgroundColor = '#3b82f6'; // Reset arrow color
+                    arrow.style.width = '10%'; // Reset width
+                });
+                autoFlowNodes[0].classList.add('highlight'); // Highlight start node
+                autoFlowNodes[0].style.backgroundColor = '#22c55e'; // Green for start
+                autoFlowNodes[0].style.color = 'white';
+            };
+
+            startAutomationFlowButton.addEventListener('click', () => {
+                resetAutoFlow();
+                let i = 0;
+                const interval = setInterval(() => {
+                    if (i < autoFlowNodes.length) {
+                        if (i > 0) {
+                            autoFlowNodes[i-1].classList.remove('highlight');
+                            autoFlowNodes[i-1].style.backgroundColor = '#bfdbfe';
+                            autoFlowNodes[i-1].style.color = '#1e40af';
+                            autoFlowArrows[i-1].style.backgroundColor = '#22c55e'; // Green for completed flow
+                        }
+                        autoFlowNodes[i].classList.add('highlight');
+                        autoFlowNodes[i].style.backgroundColor = '#22c55e'; // Green for active
+                        autoFlowNodes[i].style.color = 'white';
+                        i++;
+                    } else {
+                        clearInterval(interval);
+                        // Final state: all green
+                        autoFlowNodes.forEach(node => {
+                            node.classList.add('highlight');
+                            node.style.backgroundColor = '#22c55e';
+                            node.style.color = 'white';
+                        });
+                        autoFlowArrows.forEach(arrow => arrow.style.backgroundColor = '#22c55e');
+                    }
+                }, 700); // Animation speed
+            });
+
+            // Chatbot Simulation (Phase 3)
+            const chatbotMessages = document.getElementById('chatbotMessages');
+            const chatbotInput = document.getElementById('chatbotInput');
+            const chatbotSend = document.getElementById('chatbotSend');
+
+            const addMessage = (text, sender) => {
+                const msgDiv = document.createElement('div');
+                msgDiv.classList.add('chatbot-message', sender);
+                msgDiv.textContent = text;
+                chatbotMessages.appendChild(msgDiv);
+                chatbotMessages.scrollTop = chatbotMessages.scrollHeight; // Scroll to bottom
+            };
+
+            const handleChatbotInput = () => {
+                const userText = chatbotInput.value.trim();
+                if (userText) {
+                    addMessage(userText, 'user');
+                    chatbotInput.value = '';
+
+                    setTimeout(() => {
+                        let botResponse = "I'm sorry, I can only simulate basic responses in this demo. Please try 'order status' or 'product availability'.";
+                        if (userText.toLowerCase().includes('order status')) {
+                            botResponse = "To check your order status, please provide your order number. (e.g., 'My order is #12345').";
+                        } else if (userText.toLowerCase().includes('my order is #12345')) {
+                            botResponse = "Order #12345 is currently 'In Transit' and expected to arrive by Friday. Would you like to track it?";
+                        } else if (userText.toLowerCase().includes('product availability')) {
+                            botResponse = "Which product are you interested in? (e.g., 'Do you have Vitamin C?')";
+                        } else if (userText.toLowerCase().includes('vitamin c')) {
+                            botResponse = "Yes, Vitamin C 1000mg is currently in stock. We have 500 units available.";
+                        } else if (userText.toLowerCase().includes('track it')) {
+                            botResponse = "Please visit our tracking portal at [link to tracking portal].";
+                        } else if (userText.toLowerCase().includes('thank you')) {
+                            botResponse = "You're welcome! Is there anything else I can help you with?";
+                        }
+                        addMessage(botResponse, 'bot');
+                    }, 800);
+                }
+            };
+
+            chatbotSend.addEventListener('click', handleChatbotInput);
+            chatbotInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleChatbotInput();
+                }
+            });
+
+            // ROI Chart (Phase 7)
+            const roiBars = document.querySelectorAll('.roi-chart-bar');
+            roiBars.forEach(bar => {
+                const value = parseInt(bar.dataset.value);
+                const heightPercentage = (value / 250000) * 100; // Max value is 250K
+                bar.style.height = `${heightPercentage}%`;
+                bar.textContent = `$${(value / 1000).toFixed(0)}K`; // Display in K
+            });
+
+        });
+    </script>
+</body>
+</html>
