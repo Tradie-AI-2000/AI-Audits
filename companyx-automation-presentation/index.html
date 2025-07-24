@@ -11,6 +11,7 @@
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
             color: #1f2937;
+            padding-top: 100px; /* Increased padding to prevent header overlap */
         }
         .tab-button {
             padding: 0.75rem 1.25rem;
@@ -18,10 +19,10 @@
             font-weight: 500;
             transition: all 0.2s ease-in-out;
             cursor: pointer;
-            @apply text-gray-700 bg-gray-200 hover:bg-blue-200 hover:text-blue-800;
+            @apply text-blue-700 bg-blue-100 hover:bg-blue-200 hover:text-blue-800; /* More vibrant default */
         }
         .tab-button.active {
-            @apply bg-blue-600 text-white shadow-lg;
+            @apply bg-blue-700 text-white shadow-lg; /* Stronger active state */
         }
         .tab-content {
             display: none;
@@ -30,47 +31,60 @@
             display: block;
         }
         .card {
-            @apply bg-white p-6 rounded-xl shadow-md transition-all duration-300 ease-in-out;
+            @apply bg-white p-6 rounded-xl shadow-lg transition-all duration-300 ease-in-out border border-gray-200; /* Enhanced shadow and border */
         }
         .problem-box {
-            @apply bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg mb-4;
+            @apply bg-red-100 border border-red-300 text-red-900 p-4 rounded-lg mb-4; /* Richer red */
         }
         .solution-box {
-            @apply bg-green-50 border border-green-200 text-green-800 p-4 rounded-lg mb-4;
+            @apply bg-green-100 border border-green-300 text-green-900 p-4 rounded-lg mb-4; /* Richer green */
         }
         .metric-box {
-            @apply bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-lg text-center;
+            @apply bg-blue-100 border border-blue-300 text-blue-900 p-4 rounded-lg text-center shadow-sm; /* Richer blue */
         }
         .interactive-diagram {
-            border: 1px solid #e5e7eb;
+            border: 1px solid #c3dafe; /* Lighter blue border */
             border-radius: 0.75rem;
             padding: 1.5rem;
-            background-color: #f9fafb;
+            background-color: #e0f2fe; /* Lighter blue background */
             position: relative;
             overflow: hidden;
         }
         .flow-arrow {
             position: absolute;
-            background-color: #3b82f6;
+            background-color: #60a5fa; /* Lighter blue for default arrows */
             height: 4px;
             border-radius: 2px;
             transition: all 0.5s ease-in-out;
             z-index: 10;
         }
         .flow-node {
-            @apply bg-blue-100 text-blue-800 p-3 rounded-lg shadow-sm text-sm font-medium flex items-center justify-center text-center;
+            @apply bg-blue-200 text-blue-900 p-3 rounded-lg shadow-sm text-sm font-medium flex items-center justify-center text-center; /* Stronger default node color */
             min-height: 60px;
             min-width: 120px;
             position: relative;
             z-index: 20;
         }
         .flow-node.highlight {
-            @apply bg-blue-600 text-white shadow-lg scale-105;
+            @apply bg-blue-700 text-white shadow-lg scale-105; /* Consistent highlight color */
         }
+        .flow-node.problem-highlight { /* Specific class for problem nodes */
+            @apply bg-red-600 text-white shadow-lg scale-105;
+        }
+        .flow-arrow.problem-highlight { /* Specific class for problem arrows */
+            @apply bg-red-500;
+        }
+        .flow-node.solution-highlight { /* Specific class for solution nodes */
+            @apply bg-green-600 text-white shadow-lg scale-105;
+        }
+        .flow-arrow.solution-highlight { /* Specific class for solution arrows */
+            @apply bg-green-500;
+        }
+
         .comparison-slider-container {
             width: 100%;
             height: 200px; /* Fixed height for consistency */
-            background-color: #e2e8f0;
+            background-color: #dbeafe; /* Lighter blue */
             border-radius: 0.75rem;
             overflow: hidden;
             position: relative;
@@ -102,12 +116,12 @@
             transform: translateX(100%);
         }
         .slider-button {
-            @apply bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 transition-colors;
+            @apply bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition-colors; /* Stronger button color */
         }
 
         /* Chatbot styling */
         .chatbot-container {
-            @apply bg-gray-100 p-4 rounded-xl shadow-inner max-w-md mx-auto;
+            @apply bg-blue-50 p-4 rounded-xl shadow-inner max-w-md mx-auto; /* Lighter blue background */
             height: 350px;
             display: flex;
             flex-direction: column;
@@ -115,14 +129,14 @@
         .chatbot-messages {
             flex-grow: 1;
             overflow-y: auto;
-            @apply bg-white p-3 rounded-lg mb-3;
+            @apply bg-white p-3 rounded-lg mb-3 border border-gray-200; /* Added border */
         }
         .chatbot-message {
             @apply p-2 rounded-lg mb-2;
             max-width: 80%;
         }
         .chatbot-message.user {
-            @apply bg-blue-500 text-white ml-auto;
+            @apply bg-blue-600 text-white ml-auto; /* Stronger blue */
             border-bottom-right-radius: 0;
         }
         .chatbot-message.bot {
@@ -133,10 +147,10 @@
             @apply flex;
         }
         .chatbot-input {
-            @apply flex-grow p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500;
+            @apply flex-grow p-2 rounded-lg border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500; /* Blue border and ring */
         }
         .chatbot-send-button {
-            @apply ml-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors;
+            @apply ml-2 px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors; /* Stronger send button */
         }
 
         /* ROI Chart */
@@ -159,6 +173,7 @@
             font-weight: 600;
             font-size: 0.875rem;
             padding-bottom: 5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3); /* Added text shadow for readability */
         }
         .bar-chart-label {
             position: absolute;
@@ -172,9 +187,12 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
 
-    <header class="bg-white shadow-sm py-4 px-6 fixed top-0 left-0 w-full z-50">
+    <header class="bg-white shadow-md py-4 px-6 fixed top-0 left-0 w-full z-50">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-3xl font-bold text-blue-700">Flex Consulting</h1>
+            <div class="flex items-center space-x-4">
+                <img src="https://static.wixstatic.com/media/d98966_7270a06f25a74ff18e8533d8f5d16bed~mv2.png/v1/fill/w_97,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Flex-RGB.png" alt="Flex Consulting Logo" class="h-12 w-auto">
+                <h1 class="text-3xl font-bold text-blue-700">Flex Consulting</h1>
+            </div>
             <nav class="flex space-x-4">
                 <button class="tab-button active" data-tab="intro">Introduction</button>
                 <button class="tab-button" data-tab="current-state">Current State Audit</button>
@@ -188,7 +206,7 @@
         </div>
     </header>
 
-    <main class="flex-grow max-w-7xl mx-auto py-8 px-6 mt-20">
+    <main class="flex-grow max-w-7xl mx-auto py-8 px-6">
         <!-- Tab 1: Introduction & Executive Summary -->
         <section id="intro" class="tab-content active">
             <div class="card">
@@ -258,6 +276,7 @@
                         <div class="flow-arrow" style="left: 35%; top: 50%; width: 15%;"></div>
                         <div class="flow-arrow" style="left: 55%; top: 50%; width: 15%;"></div>
                         <div class="flow-arrow" style="left: 75%; top: 50%; width: 15%;"></div>
+                        <div id="bottleneckMessage" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-yellow-100 text-yellow-800 p-2 rounded-lg text-sm transition-opacity duration-300 opacity-0"></div>
                     </div>
                     <p class="text-sm text-gray-500 mt-2 text-center">Click on each step to see the associated bottleneck.</p>
                 </div>
@@ -426,7 +445,7 @@
 
                 <h3 class="text-3xl font-bold text-blue-700 mb-4">Interactive Flow: Automated Order Processing</h3>
                 <div class="interactive-diagram grid grid-cols-6 gap-4 items-center">
-                    <div class="flow-node highlight" id="auto-node1">Customer Order (Multi-Channel)</div>
+                    <div class="flow-node" id="auto-node1">Customer Order (Multi-Channel)</div>
                     <div class="flow-node" id="auto-node2">UiPath Bot (OCR/Extraction)</div>
                     <div class="flow-node" id="auto-node3">Micro Focus Orchestration</div>
                     <div class="flow-node" id="auto-node4">ERP System (Automated Entry)</div>
@@ -716,34 +735,37 @@
                 'node4': 'Bottleneck: Basic validation catches errors late, leading to costly rework.',
                 'node5': 'Result: Delayed processing, customer dissatisfaction, high operational costs.'
             };
+            const bottleneckMessageDiv = document.getElementById('bottleneckMessage');
 
-            let currentFlowIndex = -1;
-            const highlightFlowStep = (index) => {
-                flowNodes.forEach((node, i) => {
-                    node.classList.remove('highlight');
-                    node.style.backgroundColor = '#bfdbfe'; // Reset to default blue-100
-                    node.style.color = '#1e40af'; // Reset to default blue-800
-                });
-                flowArrows.forEach(arrow => arrow.style.backgroundColor = '#3b82f6'); // Reset arrow color
-
-                if (index !== -1) {
-                    const nodeToHighlight = flowNodes[index];
-                    if (nodeToHighlight) {
-                        nodeToHighlight.classList.add('highlight');
-                        nodeToHighlight.style.backgroundColor = '#ef4444'; // Red for problem
-                        nodeToHighlight.style.color = 'white';
-                        // Display message (could use a dedicated div, for now console log)
-                        console.log(bottleneckMessages[nodeToHighlight.id]);
-                    }
-                    if (index > 0 && flowArrows[index - 1]) {
-                        flowArrows[index - 1].style.backgroundColor = '#b91c1c'; // Red for bottleneck
-                    }
-                }
-            };
 
             flowNodes.forEach((node, index) => {
                 node.addEventListener('click', () => {
-                    highlightFlowStep(index);
+                    flowNodes.forEach((n) => {
+                        n.classList.remove('problem-highlight'); // Remove all highlights
+                        n.classList.remove('highlight'); // Remove all highlights
+                        n.style.backgroundColor = ''; // Reset inline styles
+                        n.style.color = ''; // Reset inline styles
+                    });
+                    flowArrows.forEach(arrow => {
+                        arrow.classList.remove('problem-highlight'); // Remove all highlights
+                        arrow.style.backgroundColor = ''; // Reset inline styles
+                    });
+
+                    // Apply highlight to clicked node
+                    node.classList.add('problem-highlight');
+                    node.style.backgroundColor = '#ef4444'; // Red for problem
+                    node.style.color = 'white';
+
+                    // Display message
+                    bottleneckMessageDiv.textContent = bottleneckMessages[node.id];
+                    bottleneckMessageDiv.classList.remove('opacity-0');
+                    bottleneckMessageDiv.classList.add('opacity-100');
+
+                    // Highlight preceding arrow if applicable
+                    if (index > 0 && flowArrows[index - 1]) {
+                        flowArrows[index - 1].classList.add('problem-highlight');
+                        flowArrows[index - 1].style.backgroundColor = '#b91c1c'; // Red for bottleneck
+                    }
                 });
             });
 
@@ -773,31 +795,33 @@
 
             const resetAutoFlow = () => {
                 autoFlowNodes.forEach(node => {
-                    node.classList.remove('highlight');
-                    node.style.backgroundColor = '#bfdbfe'; // Reset to default blue-100
-                    node.style.color = '#1e40af'; // Reset to default blue-800
+                    node.classList.remove('solution-highlight');
+                    node.style.backgroundColor = ''; // Reset inline styles
+                    node.style.color = ''; // Reset inline styles
                 });
                 autoFlowArrows.forEach(arrow => {
-                    arrow.style.backgroundColor = '#3b82f6'; // Reset arrow color
-                    arrow.style.width = '10%'; // Reset width
+                    arrow.classList.remove('solution-highlight');
+                    arrow.style.backgroundColor = ''; // Reset inline styles
                 });
-                autoFlowNodes[0].classList.add('highlight'); // Highlight start node
+                // Set initial state for the first node
+                autoFlowNodes[0].classList.add('solution-highlight');
                 autoFlowNodes[0].style.backgroundColor = '#22c55e'; // Green for start
                 autoFlowNodes[0].style.color = 'white';
             };
 
             startAutomationFlowButton.addEventListener('click', () => {
-                resetAutoFlow();
+                resetAutoFlow(); // Reset before starting new animation
                 let i = 0;
                 const interval = setInterval(() => {
                     if (i < autoFlowNodes.length) {
+                        // Reset previous node's specific highlight color but keep solution-highlight class
                         if (i > 0) {
-                            autoFlowNodes[i-1].classList.remove('highlight');
-                            autoFlowNodes[i-1].style.backgroundColor = '#bfdbfe';
-                            autoFlowNodes[i-1].style.color = '#1e40af';
+                            autoFlowNodes[i-1].style.backgroundColor = '#16a34a'; // Darker green for completed
+                            autoFlowArrows[i-1].classList.add('solution-highlight');
                             autoFlowArrows[i-1].style.backgroundColor = '#22c55e'; // Green for completed flow
                         }
-                        autoFlowNodes[i].classList.add('highlight');
+                        // Highlight current node
+                        autoFlowNodes[i].classList.add('solution-highlight');
                         autoFlowNodes[i].style.backgroundColor = '#22c55e'; // Green for active
                         autoFlowNodes[i].style.color = 'white';
                         i++;
@@ -805,11 +829,14 @@
                         clearInterval(interval);
                         // Final state: all green
                         autoFlowNodes.forEach(node => {
-                            node.classList.add('highlight');
-                            node.style.backgroundColor = '#22c55e';
+                            node.classList.add('solution-highlight');
+                            node.style.backgroundColor = '#16a34a'; // Darker green for all completed
                             node.style.color = 'white';
                         });
-                        autoFlowArrows.forEach(arrow => arrow.style.backgroundColor = '#22c55e');
+                        autoFlowArrows.forEach(arrow => {
+                            arrow.classList.add('solution-highlight');
+                            arrow.style.backgroundColor = '#22c55e';
+                        });
                     }
                 }, 700); // Animation speed
             });
@@ -861,7 +888,7 @@
             });
 
             // ROI Chart (Phase 7)
-            const roiBars = document.querySelectorAll('.roi-chart-bar');
+            const roiBars = document.querySelectorAll('.bar-chart-bar'); // Corrected selector
             roiBars.forEach(bar => {
                 const value = parseInt(bar.dataset.value);
                 const heightPercentage = (value / 250000) * 100; // Max value is 250K
